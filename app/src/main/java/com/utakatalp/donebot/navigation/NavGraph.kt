@@ -1,6 +1,7 @@
 package com.utakatalp.donebot.navigation
 
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.navigation3.runtime.NavKey
@@ -38,10 +39,12 @@ fun AuthNavHost(onAuthenticated: () -> Unit) {
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainNavHost(onLogout: () -> Unit) {
     val navState = rememberMainNavigationState()
     val navigator = remember(navState) { MainNavigator(navState) }
+    val bottomSheetStrategy = remember { BottomSheetSceneStrategy<NavKey>() }
 
     val entries = navState.toDecoratedEntries(
         entryProvider {
@@ -51,7 +54,9 @@ fun MainNavHost(onLogout: () -> Unit) {
             entry<Details> { key ->
                 DetailsScreen()
             }
-            entry<AddTask> {
+            entry<AddTask>(
+                metadata = BottomSheetSceneStrategy.bottomSheet()
+            ) {
                 AddTaskScreen()
             }
             entry<Profile> {
@@ -73,7 +78,8 @@ fun MainNavHost(onLogout: () -> Unit) {
     ) { _ ->
         NavDisplay(
             entries = entries,
-            onBack = { navigator.goBack() }
+            onBack = { navigator.goBack() },
+            sceneStrategies = listOf(bottomSheetStrategy)
         )
     }
 }
