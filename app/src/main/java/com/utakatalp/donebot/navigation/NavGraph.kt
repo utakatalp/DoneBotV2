@@ -4,6 +4,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -12,6 +13,8 @@ import com.utakatalp.donebot.ui.addtask.AddTaskScreen
 import com.utakatalp.donebot.ui.details.DetailsScreen
 import com.utakatalp.donebot.ui.home.HomeScreen
 import com.utakatalp.donebot.ui.login.LoginScreen
+import com.utakatalp.donebot.ui.onboarding.OnboardingScreen
+import com.utakatalp.donebot.ui.onboarding.OnboardingViewModel
 import com.utakatalp.donebot.ui.profile.ProfileScreen
 import com.utakatalp.donebot.ui.register.RegisterScreen
 import com.utakatalp.donebot.ui.settings.SettingsScreen
@@ -19,7 +22,7 @@ import com.utakatalp.donebot.ui.splash.SplashScreen
 
 @Composable
 fun AuthNavHost(onAuthenticated: () -> Unit) {
-    val backStack = rememberNavBackStack(Splash as NavKey)
+    val backStack = rememberNavBackStack(Onboarding as NavKey)
     val navigator = remember { AuthNavigator(backStack) }
 
     NavDisplay(
@@ -28,6 +31,22 @@ fun AuthNavHost(onAuthenticated: () -> Unit) {
         entryProvider = entryProvider {
             entry<Splash> {
                 SplashScreen()
+            }
+            entry<Onboarding> {
+                val viewModel = hiltViewModel<OnboardingViewModel>()
+                NavigationEffectController(
+                    navEffect = viewModel.navEffect,
+                    onNavigate = { key ->
+                        when (key) {
+                            Home -> onAuthenticated()
+                            else -> navigator.navigate(key)
+                        }
+                    }
+                )
+                OnboardingScreen(
+                    uiState = viewModel.uiState,
+                    onAction = viewModel::onAction,
+                )
             }
             entry<Login> {
                 LoginScreen()

@@ -1,0 +1,283 @@
+@file:Suppress("TooManyFunctions")
+
+package com.todoapp.uikit.components
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.todoapp.uikit.R
+import com.todoapp.uikit.previews.TDPreview
+import com.todoapp.uikit.previews.TDPreviewNoBg
+import com.todoapp.uikit.theme.Poppins
+import com.todoapp.uikit.theme.TDTheme
+
+private val poppinsFontFamily = Poppins
+
+private val buttonSmallTextStyle =
+    TextStyle(
+        fontSize = 14.sp,
+        fontWeight = FontWeight.Medium,
+        fontFamily = poppinsFontFamily,
+    )
+
+private val buttonMediumTextStyle =
+    TextStyle(
+        fontSize = 18.sp,
+        fontWeight = FontWeight.SemiBold,
+        fontFamily = poppinsFontFamily,
+    )
+
+private val buttonSmallPadding = PaddingValues(horizontal = 10.dp, vertical = 8.dp)
+private val buttonMediumPadding = PaddingValues(horizontal = 12.dp, vertical = 12.dp)
+
+enum class TDButtonType { PRIMARY, SECONDARY, OUTLINE, CANCEL, PENDING }
+
+enum class TDButtonSize { SMALL, MEDIUM }
+
+@Composable
+fun TDButton(
+    modifier: Modifier = Modifier,
+    text: String,
+    isEnable: Boolean = true,
+    type: TDButtonType = TDButtonType.PRIMARY,
+    size: TDButtonSize = TDButtonSize.MEDIUM,
+    icon: Painter? = null,
+    fullWidth: Boolean = false,
+    onClick: () -> Unit,
+) {
+    val textStyle = if (size == TDButtonSize.SMALL) buttonSmallTextStyle else buttonMediumTextStyle
+    val height = if (size == TDButtonSize.SMALL) 40.dp else 60.dp
+    val width = if (size == TDButtonSize.SMALL) 140.dp else 200.dp
+    val paddingValues = if (size == TDButtonSize.SMALL) buttonSmallPadding else buttonMediumPadding
+
+    val sizeModifier =
+        Modifier
+            .heightIn(min = height)
+            .then(modifier)
+            .then(if (fullWidth) Modifier.fillMaxWidth() else Modifier.widthIn(min = width))
+
+    when (type) {
+        TDButtonType.PRIMARY -> {
+            Button(
+                modifier = sizeModifier,
+                onClick = onClick,
+                enabled = isEnable,
+                contentPadding = paddingValues,
+                shape = RoundedCornerShape(12.dp),
+                colors =
+                ButtonColors(
+                    containerColor = TDTheme.colors.pendingGray,
+                    contentColor = TDTheme.colors.white,
+                    disabledContainerColor = TDTheme.colors.purple.copy(alpha = 0.4f),
+                    disabledContentColor = TDTheme.colors.white.copy(alpha = 0.5f),
+                ),
+            ) {
+                icon?.let {
+                    Icon(
+                        modifier = Modifier.size(24.dp),
+                        painter = icon,
+                        contentDescription = text,
+                        tint = Color.Unspecified,
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+                TDText(
+                    text = text,
+                    style = textStyle,
+                    color = TDTheme.colors.white,
+                )
+            }
+        }
+
+        TDButtonType.SECONDARY -> {
+            OutlinedButton(
+                modifier = sizeModifier,
+                onClick = onClick,
+                enabled = isEnable,
+                contentPadding = paddingValues,
+                shape = RoundedCornerShape(12.dp),
+                border =
+                BorderStroke(
+                    2.dp,
+                    if (isEnable) TDTheme.colors.crossRed else TDTheme.colors.crossRed.copy(alpha = 0.3f),
+                ),
+            ) {
+                icon?.let {
+                    Icon(
+                        modifier = Modifier.size(14.dp),
+                        painter = icon,
+                        contentDescription = text,
+                        tint = TDTheme.colors.crossRed,
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+                TDText(
+                    text = text,
+                    style = textStyle,
+                    color = if (isEnable) TDTheme.colors.crossRed else TDTheme.colors.crossRed.copy(alpha = 0.4f),
+                )
+            }
+        }
+
+        TDButtonType.OUTLINE -> {
+            OutlinedButton(
+                modifier = sizeModifier,
+                onClick = onClick,
+                enabled = isEnable,
+                contentPadding = paddingValues,
+                shape = RoundedCornerShape(12.dp),
+                border =
+                BorderStroke(
+                    width = 1.5.dp,
+                    color =
+                    if (isEnable) {
+                        TDTheme.colors.pendingGray
+                    } else {
+                        TDTheme.colors.pendingGray.copy(
+                            alpha = 0.3f,
+                        )
+                    },
+                ),
+            ) {
+                icon?.let {
+                    Icon(
+                        modifier = Modifier.size(24.dp),
+                        painter = icon,
+                        contentDescription = text,
+                        tint = Color.Unspecified,
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+                TDText(
+                    text = text,
+                    style = textStyle,
+                    color = if (isEnable) TDTheme.colors.pendingGray else TDTheme.colors.pendingGray.copy(alpha = 0.5f),
+                )
+            }
+        }
+
+        TDButtonType.CANCEL -> {
+            Button(
+                modifier = sizeModifier,
+                onClick = onClick,
+                enabled = isEnable,
+                contentPadding = paddingValues,
+                shape = RoundedCornerShape(12.dp),
+                colors =
+                ButtonColors(
+                    containerColor = TDTheme.colors.crossRed,
+                    contentColor = TDTheme.colors.white,
+                    disabledContainerColor = TDTheme.colors.red.copy(alpha = 0.5f),
+                    disabledContentColor = TDTheme.colors.white.copy(alpha = 0.5f),
+                ),
+            ) {
+                icon?.let {
+                    Icon(
+                        modifier = Modifier.size(14.dp),
+                        painter = icon,
+                        contentDescription = text,
+                        tint = TDTheme.colors.white,
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+                TDText(
+                    text = text,
+                    style = textStyle,
+                    color = TDTheme.colors.white,
+                )
+            }
+        }
+
+        TDButtonType.PENDING -> {
+            Button(
+                modifier = sizeModifier,
+                onClick = onClick,
+                enabled = isEnable,
+                contentPadding = paddingValues,
+                shape = RoundedCornerShape(12.dp),
+                colors =
+                ButtonColors(
+                    containerColor = TDTheme.colors.pendingGray,
+                    contentColor = TDTheme.colors.white,
+                    disabledContainerColor = TDTheme.colors.pendingGray.copy(alpha = 0.4f),
+                    disabledContentColor = TDTheme.colors.white.copy(alpha = 0.5f),
+                ),
+            ) {
+                icon?.let {
+                    Icon(
+                        modifier = Modifier.size(24.dp),
+                        painter = icon,
+                        contentDescription = text,
+                        tint = TDTheme.colors.white,
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+                TDText(
+                    text = text,
+                    style = textStyle,
+                    color = TDTheme.colors.white,
+                )
+            }
+        }
+    }
+}
+
+@TDPreviewNoBg
+@Composable
+fun TDButtonPreview() {
+    Column {
+        TDButton(text = "Primary Button", onClick = {}, type = TDButtonType.PRIMARY, size = TDButtonSize.SMALL)
+        Spacer(modifier = Modifier.height(8.dp))
+        TDButton(text = "Primary Button 2", onClick = {}, type = TDButtonType.PRIMARY, size = TDButtonSize.MEDIUM, fullWidth = true, isEnable = false)
+        Spacer(modifier = Modifier.height(8.dp))
+        TDButton(text = "Secondary Button", onClick = {}, type = TDButtonType.SECONDARY, size = TDButtonSize.SMALL)
+        Spacer(modifier = Modifier.height(8.dp))
+        TDButton(text = "Outline Button", onClick = {}, type = TDButtonType.OUTLINE, size = TDButtonSize.SMALL)
+        Spacer(modifier = Modifier.height(8.dp))
+        TDButton(text = "Cancel Button", onClick = {}, type = TDButtonType.CANCEL, size = TDButtonSize.SMALL)
+        Spacer(modifier = Modifier.height(8.dp))
+        TDButton(text = "Pending Button", onClick = {}, type = TDButtonType.PENDING, size = TDButtonSize.SMALL)
+    }
+}
+
+@TDPreview
+@Composable
+private fun TDButtonPrimaryPreview() {
+    TDTheme {
+        TDButton(text = "Save", onClick = {}, type = TDButtonType.PRIMARY)
+    }
+}
+
+@TDPreview
+@Composable
+private fun TDButtonWithIconPreview() {
+    TDTheme {
+        TDButton(
+            text = "Add",
+            onClick = {},
+            type = TDButtonType.PRIMARY,
+            icon = painterResource(id = R.drawable.ic_plus),
+        )
+    }
+}

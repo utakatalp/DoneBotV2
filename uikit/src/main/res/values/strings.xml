@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">UIKit</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <!-- Content descriptions -->
+    <string name="cd_close">Close</string>
+    <string name="cd_toggle_password_visibility">Toggle password visibility</string>
+</resources>

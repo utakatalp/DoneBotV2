@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">DoneBot</string>
+    <!-- Onboarding -->
+    <string name="onboarding_title">Manage What To Do</string>
+    <string name="onboarding_description">The smartest way to manage what you have to do. Plan clearly. Track easily. Never forget what matters.</string>
+    <string name="onboarding_get_started">Continue as a Guest</string>
+    <string name="onboarding_login_span">Already have an account? Login</string>
+    <string name="onboarding_login_text_span">Login</string>
+    <string name="onboarding_background_image">Onboarding Background Image</string>
 </resources>

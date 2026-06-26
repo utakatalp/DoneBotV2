@@ -1,0 +1,9 @@
+com.todoapp.uikit-pngs-0 /Users/bundle/AndroidStudioProjects/DoneBot/uikit/build/generated/res/pngs/debug
+com.todoapp.uikit-updated_navigation_xml-1 /Users/bundle/AndroidStudioProjects/DoneBot/uikit/build/generated/updated_navigation_xml/debug
+com.todoapp.uikit-mergeDebugResources-2 /Users/bundle/AndroidStudioProjects/DoneBot/uikit/build/intermediates/incremental/debug/mergeDebugResources/merged.dir
+com.todoapp.uikit-mergeDebugResources-3 /Users/bundle/AndroidStudioProjects/DoneBot/uikit/build/intermediates/incremental/debug/mergeDebugResources/stripped.dir
+com.todoapp.uikit-debug-4 /Users/bundle/AndroidStudioProjects/DoneBot/uikit/build/intermediates/merged_res/debug/mergeDebugResources
+com.todoapp.uikit-debug-5 /Users/bundle/AndroidStudioProjects/DoneBot/uikit/build/intermediates/packaged_res/debug/packageDebugResources
+com.todoapp.uikit-debug-6 /Users/bundle/AndroidStudioProjects/DoneBot/uikit/src/debug/res
+com.todoapp.uikit-main-7 /Users/bundle/AndroidStudioProjects/DoneBot/uikit/src/main/res
+gradleHome-0 /Users/bundle/.gradle

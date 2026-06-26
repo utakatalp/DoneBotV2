@@ -24,4 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "DoneBot"
 include(":app")
- 
+include(":uikit")

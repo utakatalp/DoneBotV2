@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 
 // Auth flow
 @Serializable data object Splash : AppKey
+@Serializable data object Onboarding : AppKey
 @Serializable data object Login : AppKey
 @Serializable data object Register : AppKey
 
