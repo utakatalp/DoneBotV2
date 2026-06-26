@@ -12,6 +12,7 @@ import androidx.navigation3.ui.NavDisplay
 import com.utakatalp.donebot.ui.addtask.AddTaskScreen
 import com.utakatalp.donebot.ui.details.DetailsScreen
 import com.utakatalp.donebot.ui.home.HomeScreen
+import com.utakatalp.donebot.ui.login.LoginContract
 import com.utakatalp.donebot.ui.login.LoginScreen
 import com.utakatalp.donebot.ui.onboarding.OnboardingScreen
 import com.utakatalp.donebot.ui.onboarding.OnboardingViewModel
@@ -49,7 +50,11 @@ fun AuthNavHost(onAuthenticated: () -> Unit) {
                 )
             }
             entry<Login> {
-                LoginScreen()
+                LoginScreen(
+                    uiState = LoginContract.UiState(),
+                    uiEffect = kotlinx.coroutines.flow.emptyFlow(),
+                    onAction = {},
+                )
             }
             entry<Register> {
                 RegisterScreen()
