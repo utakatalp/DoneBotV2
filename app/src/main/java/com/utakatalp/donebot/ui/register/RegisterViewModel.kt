@@ -3,8 +3,7 @@ package com.utakatalp.donebot.ui.register
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.utakatalp.donebot.data.model.network.data.AuthResponseData
-import com.utakatalp.donebot.data.model.network.request.RegisterRequest
+import com.utakatalp.donebot.domain.model.AuthSession
 import com.utakatalp.donebot.domain.repository.SessionPreferences
 import com.utakatalp.donebot.domain.repository.UserRepository
 import com.utakatalp.donebot.navigation.Home
@@ -123,18 +122,16 @@ class RegisterViewModel @Inject constructor(
         val state = _uiState.value
         _uiState.update { it.copy(isLoading = true, generalError = null) }
         userRepository.register(
-            RegisterRequest(
-                email = state.email,
-                password = state.password,
-                displayName = state.fullName,
-            ),
+            email = state.email,
+            password = state.password,
+            displayName = state.fullName,
         )
             .onSuccess { onRegisterSuccess(it) }
             .onFailure { onRegisterFailure(it) }
     }
 
-    private suspend fun onRegisterSuccess(auth: AuthResponseData) {
-        sessionPreferences.saveSession(auth)
+    private suspend fun onRegisterSuccess(session: AuthSession) {
+        sessionPreferences.saveSession(session)
         _uiState.update { it.copy(isLoading = false, isRedirecting = true) }
         _navEffect.trySend(NavigationEffect.Navigate(Home))
     }

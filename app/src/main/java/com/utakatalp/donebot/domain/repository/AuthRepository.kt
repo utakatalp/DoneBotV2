@@ -1,8 +1,7 @@
 package com.utakatalp.donebot.domain.repository
 
-import com.utakatalp.donebot.data.model.network.data.RefreshTokenData
-import com.utakatalp.donebot.data.model.network.request.RefreshTokenRequest
+import com.utakatalp.donebot.domain.model.AuthSession
 
 interface AuthRepository {
-    suspend fun refresh(request: RefreshTokenRequest): Result<RefreshTokenData>
+    suspend fun refresh(refreshToken: String): Result<AuthSession>
 }

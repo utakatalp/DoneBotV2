@@ -1,10 +1,8 @@
 package com.utakatalp.donebot.domain.repository
 
-import com.utakatalp.donebot.data.model.network.data.AuthResponseData
-import com.utakatalp.donebot.data.model.network.request.LoginRequest
-import com.utakatalp.donebot.data.model.network.request.RegisterRequest
+import com.utakatalp.donebot.domain.model.AuthSession
 
 interface UserRepository {
-    suspend fun login(request: LoginRequest): Result<AuthResponseData>
-    suspend fun register(request: RegisterRequest): Result<AuthResponseData>
+    suspend fun login(email: String, password: String): Result<AuthSession>
+    suspend fun register(email: String, password: String, displayName: String): Result<AuthSession>
 }

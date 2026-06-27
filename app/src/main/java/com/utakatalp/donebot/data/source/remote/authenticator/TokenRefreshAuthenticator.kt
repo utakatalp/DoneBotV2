@@ -1,7 +1,6 @@
 package com.utakatalp.donebot.data.source.remote.authenticator
 
 import com.utakatalp.donebot.common.DomainException
-import com.utakatalp.donebot.data.model.network.request.RefreshTokenRequest
 import com.utakatalp.donebot.domain.repository.AuthRepository
 import com.utakatalp.donebot.domain.repository.SessionPreferences
 import kotlinx.coroutines.runBlocking
@@ -38,14 +37,12 @@ class TokenRefreshAuthenticator @Inject constructor(
                 val storedRefreshToken = sessionPreferences.getRefreshToken() ?: return@runBlocking null
                 if (storedRefreshToken.isBlank()) return@runBlocking null
 
-                val refreshed = authRepository.refresh(RefreshTokenRequest(storedRefreshToken))
+                val refreshed = authRepository.refresh(storedRefreshToken)
                 if (refreshed.isSuccess) {
-                    val tokens = refreshed.getOrThrow()
-                    sessionPreferences.setAccessToken(tokens.accessToken)
-                    sessionPreferences.setRefreshToken(tokens.refreshToken)
-                    sessionPreferences.setExpiresAt(tokens.expiresIn)
+                    val session = refreshed.getOrThrow()
+                    sessionPreferences.saveSession(session)
                     response.request.newBuilder()
-                        .header("Authorization", "Bearer ${tokens.accessToken}")
+                        .header("Authorization", "Bearer ${session.accessToken}")
                         .build()
                 } else {
                     if (refreshed.exceptionOrNull() is DomainException.Unauthorized) {

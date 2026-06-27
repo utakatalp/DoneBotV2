@@ -3,8 +3,7 @@ package com.utakatalp.donebot.ui.login
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.utakatalp.donebot.data.model.network.data.AuthResponseData
-import com.utakatalp.donebot.data.model.network.request.LoginRequest
+import com.utakatalp.donebot.domain.model.AuthSession
 import com.utakatalp.donebot.domain.repository.SessionPreferences
 import com.utakatalp.donebot.domain.repository.UserRepository
 import com.utakatalp.donebot.navigation.Home
@@ -91,13 +90,13 @@ class LoginViewModel @Inject constructor(
     private fun login() = viewModelScope.launch {
         val (email, password) = _uiState.value.let { it.email to it.password }
         _uiState.update { it.copy(isLoading = true, generalError = null) }
-        userRepository.login(LoginRequest(email, password))
+        userRepository.login(email, password)
             .onSuccess { onLoginSuccess(it) }
             .onFailure { onLoginFailure(it) }
     }
 
-    private suspend fun onLoginSuccess(auth: AuthResponseData) {
-        sessionPreferences.saveSession(auth)
+    private suspend fun onLoginSuccess(session: AuthSession) {
+        sessionPreferences.saveSession(session)
         _uiState.update { it.copy(isLoading = false) }
         _navEffect.trySend(NavigationEffect.Navigate(Home))
     }
