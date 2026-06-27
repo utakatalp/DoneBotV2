@@ -3,6 +3,7 @@ package com.utakatalp.donebot.navigation
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation3.runtime.NavKey
@@ -12,8 +13,9 @@ import androidx.navigation3.ui.NavDisplay
 import com.utakatalp.donebot.ui.addtask.AddTaskScreen
 import com.utakatalp.donebot.ui.details.DetailsScreen
 import com.utakatalp.donebot.ui.home.HomeScreen
-import com.utakatalp.donebot.ui.login.LoginContract
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.utakatalp.donebot.ui.login.LoginScreen
+import com.utakatalp.donebot.ui.login.LoginViewModel
 import com.utakatalp.donebot.ui.onboarding.OnboardingScreen
 import com.utakatalp.donebot.ui.onboarding.OnboardingViewModel
 import com.utakatalp.donebot.ui.profile.ProfileScreen
@@ -50,10 +52,21 @@ fun AuthNavHost(onAuthenticated: () -> Unit) {
                 )
             }
             entry<Login> {
+                val viewModel = hiltViewModel<LoginViewModel>()
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                NavigationEffectController(
+                    navEffect = viewModel.navEffect,
+                    onNavigate = { key ->
+                        when (key) {
+                            Home -> onAuthenticated()
+                            else -> navigator.navigate(key)
+                        }
+                    }
+                )
                 LoginScreen(
-                    uiState = LoginContract.UiState(),
-                    uiEffect = kotlinx.coroutines.flow.emptyFlow(),
-                    onAction = {},
+                    uiState = uiState,
+                    uiEffect = viewModel.uiEffect,
+                    onAction = viewModel::onAction,
                 )
             }
             entry<Register> {

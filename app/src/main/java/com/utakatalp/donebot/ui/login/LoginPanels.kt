@@ -298,7 +298,6 @@ private fun LoginFormPanelEmailErrorPreview() {
             uiState = UiState(
                 email = "not-an-email",
                 emailError = LoginContract.LoginError("Please enter a valid email"),
-                hasSubmittedOnce = true,
             ),
             onAction = {},
         )
@@ -314,7 +313,6 @@ private fun LoginFormPanelPasswordErrorPreview() {
                 email = "name@example.com",
                 password = "abc",
                 passwordError = LoginContract.LoginError("Password must be at least 8 characters"),
-                hasSubmittedOnce = true,
             ),
             onAction = {},
         )
@@ -330,7 +328,6 @@ private fun LoginFormPanelGeneralErrorPreview() {
                 email = "name@example.com",
                 password = "Password123",
                 generalError = LoginContract.LoginError("Invalid email or password"),
-                hasSubmittedOnce = true,
             ),
             onAction = {},
         )
