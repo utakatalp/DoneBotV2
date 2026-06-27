@@ -20,6 +20,7 @@ import com.utakatalp.donebot.ui.onboarding.OnboardingScreen
 import com.utakatalp.donebot.ui.onboarding.OnboardingViewModel
 import com.utakatalp.donebot.ui.profile.ProfileScreen
 import com.utakatalp.donebot.ui.register.RegisterScreen
+import com.utakatalp.donebot.ui.register.RegisterViewModel
 import com.utakatalp.donebot.ui.settings.SettingsScreen
 import com.utakatalp.donebot.ui.splash.SplashScreen
 
@@ -70,7 +71,22 @@ fun AuthNavHost(onAuthenticated: () -> Unit) {
                 )
             }
             entry<Register> {
-                RegisterScreen()
+                val viewModel = hiltViewModel<RegisterViewModel>()
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                NavigationEffectController(
+                    navEffect = viewModel.navEffect,
+                    onNavigate = { key ->
+                        when (key) {
+                            Home -> onAuthenticated()
+                            else -> navigator.navigate(key)
+                        }
+                    }
+                )
+                RegisterScreen(
+                    uiState = uiState,
+                    uiEffect = viewModel.uiEffect,
+                    onAction = viewModel::onAction,
+                )
             }
         }
     )

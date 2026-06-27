@@ -1,25 +1,39 @@
 package com.utakatalp.donebot.ui.register
 
+import androidx.compose.runtime.Immutable
+
 object RegisterContract {
-    data class State(
+    @Immutable
+    data class UiState(
+        val fullName: String = "",
         val email: String = "",
         val password: String = "",
         val confirmPassword: String = "",
+        val isPasswordVisible: Boolean = false,
+        val emailError: RegisterError? = null,
+        val passwordError: RegisterError? = null,
+        val confirmPasswordError: RegisterError? = null,
+        val generalError: RegisterError? = null,
+        val passwordStrength: PasswordStrength? = null,
         val isLoading: Boolean = false,
-        val error: String? = null
+        val isRedirecting: Boolean = false,
     )
 
-    sealed interface Event {
-        data class EmailChanged(val value: String) : Event
-        data class PasswordChanged(val value: String) : Event
-        data class ConfirmPasswordChanged(val value: String) : Event
-        object RegisterClicked : Event
-        object LoginClicked : Event
+    sealed interface UiAction {
+        data class OnFullNameChange(val value: String) : UiAction
+        data class OnEmailChange(val value: String) : UiAction
+        data class OnPasswordChange(val value: String) : UiAction
+        data class OnConfirmPasswordChange(val value: String) : UiAction
+        data object OnPasswordVisibilityTap : UiAction
+        data object OnSignUpTap : UiAction
+        data object OnLoginTap : UiAction
     }
 
-    sealed interface Effect {
-        object NavigateToHome : Effect
-        object NavigateToLogin : Effect
-        data class ShowError(val message: String) : Effect
+    sealed interface UiEffect {
+        data class ShowToast(val message: String) : UiEffect
     }
+
+    data class RegisterError(val message: String)
+
+    enum class PasswordStrength { WEAK, MEDIUM, STRONG }
 }

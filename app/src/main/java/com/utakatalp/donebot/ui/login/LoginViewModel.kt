@@ -3,6 +3,7 @@ package com.utakatalp.donebot.ui.login
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.utakatalp.donebot.data.model.network.data.AuthResponseData
 import com.utakatalp.donebot.data.model.network.request.LoginRequest
 import com.utakatalp.donebot.domain.repository.SessionPreferences
 import com.utakatalp.donebot.domain.repository.UserRepository
@@ -88,23 +89,26 @@ class LoginViewModel @Inject constructor(
     }
 
     private fun login() = viewModelScope.launch {
+        val (email, password) = _uiState.value.let { it.email to it.password }
         _uiState.update { it.copy(isLoading = true, generalError = null) }
-        userRepository.login(LoginRequest(email = _uiState.value.email, password = _uiState.value.password))
-            .onSuccess { auth ->
-                sessionPreferences.setAccessToken(auth.accessToken)
-                sessionPreferences.setRefreshToken(auth.refreshToken)
-                sessionPreferences.setExpiresAt(auth.expiresIn)
-                _uiState.update { it.copy(isLoading = false) }
-                _navEffect.trySend(NavigationEffect.Navigate(Home))
-            }
-            .onFailure { error ->
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        generalError = LoginError(error.message ?: "Login failed"),
-                    )
-                }
-            }
+        userRepository.login(LoginRequest(email, password))
+            .onSuccess { onLoginSuccess(it) }
+            .onFailure { onLoginFailure(it) }
+    }
+
+    private suspend fun onLoginSuccess(auth: AuthResponseData) {
+        sessionPreferences.saveSession(auth)
+        _uiState.update { it.copy(isLoading = false) }
+        _navEffect.trySend(NavigationEffect.Navigate(Home))
+    }
+
+    private fun onLoginFailure(error: Throwable) {
+        _uiState.update {
+            it.copy(
+                isLoading = false,
+                generalError = LoginError(error.message ?: "Login failed"),
+            )
+        }
     }
 
     private fun validateEmail(email: String): LoginError? = when {

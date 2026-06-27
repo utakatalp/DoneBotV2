@@ -13,3 +13,10 @@ data class LoginRequest(
 data class RefreshTokenRequest(
     @SerialName("refreshToken") val refreshToken: String,
 )
+
+@Serializable
+data class RegisterRequest(
+    @SerialName("email") val email: String,
+    @SerialName("password") val password: String,
+    @SerialName("displayName") val displayName: String,
+)

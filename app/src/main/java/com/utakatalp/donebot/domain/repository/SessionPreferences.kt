@@ -1,5 +1,6 @@
 package com.utakatalp.donebot.domain.repository
 
+import com.utakatalp.donebot.data.model.network.data.AuthResponseData
 import kotlinx.coroutines.flow.Flow
 
 interface SessionPreferences {
@@ -14,4 +15,10 @@ interface SessionPreferences {
     suspend fun getExpiresAt(): Long?
 
     suspend fun clear()
+
+    suspend fun saveSession(auth: AuthResponseData) {
+        setAccessToken(auth.accessToken)
+        setRefreshToken(auth.refreshToken)
+        setExpiresAt(auth.expiresIn)
+    }
 }

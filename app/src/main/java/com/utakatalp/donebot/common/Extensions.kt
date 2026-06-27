@@ -16,7 +16,6 @@ suspend fun <T> handleRequest(request: suspend () -> Response<BaseResponse<T?>>)
 
     if (!response.isSuccessful) {
         val errorBody = response.errorBody()?.string()
-        Log.d("handleRequest", "error body: $errorBody")
         val message = errorBody
             ?.let { runCatching { Json.decodeFromString<ErrorResponse>(it).message }.getOrNull() }
             ?: response.message()
@@ -34,7 +33,6 @@ suspend fun <T> handleRequest(request: suspend () -> Response<BaseResponse<T?>>)
     }
 } catch (t: Throwable) {
     if (t is CancellationException) throw t
-    Log.e("handleRequest", "Throwable: ${t.javaClass.simpleName}: ${t.message}", t)
     Result.failure(DomainException.fromThrowable(t))
 }
 
