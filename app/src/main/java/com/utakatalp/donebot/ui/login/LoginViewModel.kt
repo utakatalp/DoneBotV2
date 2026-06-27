@@ -2,6 +2,10 @@ package com.utakatalp.donebot.ui.login
 
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.utakatalp.donebot.data.model.network.request.LoginRequest
+import com.utakatalp.donebot.domain.repository.SessionPreferences
+import com.utakatalp.donebot.domain.repository.UserRepository
 import com.utakatalp.donebot.navigation.Home
 import com.utakatalp.donebot.navigation.NavigationEffect
 import com.utakatalp.donebot.navigation.Register
@@ -16,12 +20,16 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 private const val PASSWORD_MIN_LENGTH = 8
 
 @HiltViewModel
-class LoginViewModel @Inject constructor() : ViewModel() {
+class LoginViewModel @Inject constructor(
+    private val userRepository: UserRepository,
+    private val sessionPreferences: SessionPreferences,
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
@@ -79,8 +87,24 @@ class LoginViewModel @Inject constructor() : ViewModel() {
         }
     }
 
-    private fun login() {
-        _navEffect.trySend(NavigationEffect.Navigate(Home))
+    private fun login() = viewModelScope.launch {
+        _uiState.update { it.copy(isLoading = true, generalError = null) }
+        userRepository.login(LoginRequest(email = _uiState.value.email, password = _uiState.value.password))
+            .onSuccess { auth ->
+                sessionPreferences.setAccessToken(auth.accessToken)
+                sessionPreferences.setRefreshToken(auth.refreshToken)
+                sessionPreferences.setExpiresAt(auth.expiresIn)
+                _uiState.update { it.copy(isLoading = false) }
+                _navEffect.trySend(NavigationEffect.Navigate(Home))
+            }
+            .onFailure { error ->
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        generalError = LoginError(error.message ?: "Login failed"),
+                    )
+                }
+            }
     }
 
     private fun validateEmail(email: String): LoginError? = when {

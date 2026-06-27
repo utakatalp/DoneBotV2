@@ -27,9 +27,11 @@ android {
     buildTypes {
         debug {
             buildConfigField("String", "DATABASE_NAME", "\"donebot_debug.db\"")
+            buildConfigField("String", "BASE_URL", "\"https://donebot-backend.onrender.com/\"")
         }
         release {
             buildConfigField("String", "DATABASE_NAME", "\"donebot.db\"")
+            buildConfigField("String", "BASE_URL", "\"https://donebot-backend.onrender.com/\"")
             optimization {
                 enable = false
             }
@@ -65,6 +67,11 @@ dependencies {
     implementation(libs.navigation3.runtime)
     implementation(libs.navigation3.ui)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.kotlinx.serialization)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging)
+    implementation(libs.androidx.datastore.preferences)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
