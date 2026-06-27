@@ -13,6 +13,7 @@ fun NavigationEffectController(
     navEffect.collectWithLifecycle { effect ->
         when (effect) {
             is NavigationEffect.Navigate -> onNavigate(effect.key)
+            NavigationEffect.GoBack -> onBack()
         }
     }
 }

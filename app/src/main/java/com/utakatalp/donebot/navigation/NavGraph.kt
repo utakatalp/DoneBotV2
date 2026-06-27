@@ -1,10 +1,13 @@
 package com.utakatalp.donebot.navigation
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheetProperties
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
@@ -14,6 +17,7 @@ import com.utakatalp.donebot.ui.addtask.AddTaskScreen
 import com.utakatalp.donebot.ui.details.DetailsScreen
 import com.utakatalp.donebot.ui.home.HomeScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.utakatalp.donebot.ui.addtask.AddTaskViewModel
 import com.utakatalp.donebot.ui.login.LoginScreen
 import com.utakatalp.donebot.ui.login.LoginViewModel
 import com.utakatalp.donebot.ui.onboarding.OnboardingScreen
@@ -102,15 +106,38 @@ fun MainNavHost(onLogout: () -> Unit) {
     val entries = navState.toDecoratedEntries(
         entryProvider {
             entry<Home> {
-                HomeScreen()
+                val viewModel = hiltViewModel<com.utakatalp.donebot.ui.home.HomeViewModel>()
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                NavigationEffectController(
+                    navEffect = viewModel.navEffect,
+                    onNavigate = { key -> navigator.navigate(key) }
+                )
+                HomeScreen(
+                    uiState = uiState,
+                    uiEffect = viewModel.uiEffect,
+                    onAction = viewModel::onAction,
+                )
             }
             entry<Details> { key ->
                 DetailsScreen()
             }
             entry<AddTask>(
-                metadata = BottomSheetSceneStrategy.bottomSheet()
+                metadata = BottomSheetSceneStrategy.bottomSheet(
+                    skipPartiallyExpanded = true,
+                )
             ) {
-                AddTaskScreen()
+                val viewModel = hiltViewModel<AddTaskViewModel>()
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                NavigationEffectController(
+                    navEffect = viewModel.navEffect,
+                    onNavigate = { key -> navigator.navigate(key) },
+                    onBack = { navigator.goBack() },
+                )
+                AddTaskScreen(
+                    uiState = uiState,
+                    uiEffect = viewModel.uiEffect,
+                    onAction = viewModel::onAction,
+                )
             }
             entry<Profile> {
                 ProfileScreen()
@@ -128,8 +155,9 @@ fun MainNavHost(onLogout: () -> Unit) {
                 onTabSelected = { navigator.navigate(it) }
             )
         }
-    ) { _ ->
+    ) { innerPadding ->
         NavDisplay(
+            modifier = Modifier.padding(innerPadding),
             entries = entries,
             onBack = { navigator.goBack() },
             sceneStrategies = listOf(bottomSheetStrategy)

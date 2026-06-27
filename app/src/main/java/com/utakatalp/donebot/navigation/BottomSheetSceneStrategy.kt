@@ -3,6 +3,7 @@ package com.utakatalp.donebot.navigation
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalBottomSheetProperties
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -17,12 +18,18 @@ import androidx.navigation3.scene.SceneStrategy
 import androidx.navigation3.scene.SceneStrategyScope
 
 @OptIn(ExperimentalMaterial3Api::class)
+data class BottomSheetSpec(
+    val properties: ModalBottomSheetProperties = ModalBottomSheetProperties(),
+    val skipPartiallyExpanded: Boolean = false,
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
 internal data class BottomSheetScene<T : Any>(
     override val key: T,
     override val previousEntries: List<NavEntry<T>>,
     override val overlaidEntries: List<NavEntry<T>>,
     private val entry: NavEntry<T>,
-    private val modalBottomSheetProperties: ModalBottomSheetProperties,
+    private val spec: BottomSheetSpec,
     private val onBack: () -> Unit,
 ) : OverlayScene<T> {
 
@@ -30,9 +37,13 @@ internal data class BottomSheetScene<T : Any>(
 
     override val content: @Composable (() -> Unit) = {
         val lifecycleOwner = rememberLifecycleOwner()
+        val sheetState = rememberModalBottomSheetState(
+            skipPartiallyExpanded = spec.skipPartiallyExpanded,
+        )
         ModalBottomSheet(
             onDismissRequest = onBack,
-            properties = modalBottomSheetProperties,
+            properties = spec.properties,
+            sheetState = sheetState,
         ) {
             CompositionLocalProvider(LocalLifecycleOwner provides lifecycleOwner) {
                 entry.Content()
@@ -53,15 +64,15 @@ class BottomSheetSceneStrategy<T : Any> : SceneStrategy<T> {
 
     override fun SceneStrategyScope<T>.calculateScene(entries: List<NavEntry<T>>): Scene<T>? {
         val lastEntry = entries.lastOrNull() ?: return null
-        val properties = lastEntry.metadata[BottomSheetKey] ?: return null
+        val spec = lastEntry.metadata[BottomSheetKey] ?: return null
         @Suppress("UNCHECKED_CAST")
         return BottomSheetScene(
             key = lastEntry.contentKey as T,
             previousEntries = entries.dropLast(1),
             overlaidEntries = entries.dropLast(1),
             entry = lastEntry,
-            modalBottomSheetProperties = properties,
-            onBack = onBack
+            spec = spec,
+            onBack = onBack,
         )
     }
 
@@ -71,15 +82,16 @@ class BottomSheetSceneStrategy<T : Any> : SceneStrategy<T> {
          *
          * Usage inside [entryProvider]:
          * ```
-         * entry<AddTask>(metadata = BottomSheetSceneStrategy.bottomSheet()) {
+         * entry<AddTask>(metadata = BottomSheetSceneStrategy.bottomSheet(skipPartiallyExpanded = true)) {
          *     AddTaskScreen()
          * }
          * ```
          */
         fun bottomSheet(
-            properties: ModalBottomSheetProperties = ModalBottomSheetProperties()
-        ) = metadata { put(BottomSheetKey, properties) }
+            properties: ModalBottomSheetProperties = ModalBottomSheetProperties(),
+            skipPartiallyExpanded: Boolean = false,
+        ) = metadata { put(BottomSheetKey, BottomSheetSpec(properties, skipPartiallyExpanded)) }
 
-        object BottomSheetKey : NavMetadataKey<ModalBottomSheetProperties>
+        object BottomSheetKey : NavMetadataKey<BottomSheetSpec>
     }
 }

@@ -52,6 +52,7 @@ playServicesLocation = "21.3.0"
 googlePlaces = "3.5.0"
 mapsCompose = "4.4.1"
 navigation3 = "1.1.3"
+desugarJdkLibs = "2.1.5"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -151,6 +152,9 @@ maps-compose = { group = "com.google.maps.android", name = "maps-compose", versi
 # --- Navigation 3 ---
 navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "navigation3" }
 navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "navigation3" }
+
+# --- Core Library Desugaring (java.time on API < 26) ---
+desugar-jdk-libs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugarJdkLibs" }
 
 # --- Timber (Logging) ---
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }

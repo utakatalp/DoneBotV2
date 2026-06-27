@@ -36,4 +36,28 @@
     <string name="register_already_have_account">Already have an account? </string>
     <string name="register_login">Login</string>
     <string name="register_toggle_password">Toggle password visibility</string>
+    <!-- Home -->
+    <string name="home_add_task">Add task</string>
+    <string name="home_no_tasks_title">No tasks yet</string>
+    <string name="home_no_tasks_description">Plan something for today — tap the + button to add your first task.</string>
+    <string name="home_delete_task_title">Delete task?</string>
+    <string name="home_delete_task_message">This task will be removed. You can\'t undo this.</string>
+    <string name="home_delete">Delete</string>
+    <string name="home_cancel">Cancel</string>
+    <string name="home_retry">Retry</string>
+    <!-- Add Task -->
+    <string name="addtask_title">New Task</string>
+    <string name="addtask_dismiss">Close</string>
+    <string name="addtask_title_label">Title</string>
+    <string name="addtask_title_placeholder">What needs doing?</string>
+    <string name="addtask_description_label">Description</string>
+    <string name="addtask_description_placeholder">Optional notes</string>
+    <string name="addtask_date_label">Date</string>
+    <string name="addtask_date_placeholder">Pick a date</string>
+    <string name="addtask_time_start_label">Start</string>
+    <string name="addtask_time_end_label">End</string>
+    <string name="addtask_time_placeholder">—</string>
+    <string name="addtask_save_button">Add Task</string>
+    <string name="addtask_ok">OK</string>
+    <string name="addtask_cancel">Cancel</string>
 </resources>

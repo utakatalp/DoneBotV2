@@ -11,6 +11,14 @@ import retrofit2.Response
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 
+suspend inline fun <T> handleLocal(block: () -> T): Result<T> = try {
+    Result.success(block())
+} catch (ce: CancellationException) {
+    throw ce
+} catch (t: Throwable) {
+    Result.failure(DomainException.fromThrowable(t))
+}
+
 suspend fun <T> handleRequest(request: suspend () -> Response<BaseResponse<T?>>): Result<T> = try {
     val response = request()
 

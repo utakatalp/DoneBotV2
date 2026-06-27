@@ -16,7 +16,7 @@ import kotlinx.serialization.Serializable
 @Serializable data object Profile : AppKey
 
 // Home tab sub-routes
-@Serializable data class Details(val taskId: String) : AppKey
+@Serializable data class Details(val taskId: Long) : AppKey
 @Serializable data object AddTask : AppKey
 
 // Profile tab sub-routes
