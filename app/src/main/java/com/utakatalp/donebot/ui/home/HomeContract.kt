@@ -31,6 +31,7 @@ object HomeContract {
         data class OnTaskClick(val task: Task) : UiAction
         data class OnTaskLongPress(val task: Task) : UiAction
         data object OnAddTaskTap : UiAction
+        data object OnPomodoroTap : UiAction
         data object OnDeleteDialogConfirm : UiAction
         data object OnDeleteDialogDismiss : UiAction
         data object OnUndoDelete : UiAction

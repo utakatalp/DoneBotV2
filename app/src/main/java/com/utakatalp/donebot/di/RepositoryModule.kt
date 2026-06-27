@@ -1,12 +1,16 @@
 package com.utakatalp.donebot.di
 
+import com.utakatalp.donebot.data.engine.PomodoroEngineImpl
 import com.utakatalp.donebot.data.repository.AuthRepositoryImpl
+import com.utakatalp.donebot.data.repository.PomodoroPreferencesImpl
 import com.utakatalp.donebot.data.repository.SessionPreferencesImpl
 import com.utakatalp.donebot.data.repository.TaskRepositoryImpl
 import com.utakatalp.donebot.data.repository.UserRepositoryImpl
 import com.utakatalp.donebot.data.source.local.datasource.TaskLocalDataSource
 import com.utakatalp.donebot.data.source.local.datasource.TaskLocalDataSourceImpl
+import com.utakatalp.donebot.domain.engine.PomodoroEngine
 import com.utakatalp.donebot.domain.repository.AuthRepository
+import com.utakatalp.donebot.domain.repository.PomodoroPreferences
 import com.utakatalp.donebot.domain.repository.SessionPreferences
 import com.utakatalp.donebot.domain.repository.TaskRepository
 import com.utakatalp.donebot.domain.repository.UserRepository
@@ -34,4 +38,10 @@ abstract class RepositoryModule {
 
     @Binds @Singleton
     abstract fun bindAuthRepository(impl: AuthRepositoryImpl): AuthRepository
+
+    @Binds @Singleton
+    abstract fun bindPomodoroPreferences(impl: PomodoroPreferencesImpl): PomodoroPreferences
+
+    @Binds @Singleton
+    abstract fun bindPomodoroEngine(impl: PomodoroEngineImpl): PomodoroEngine
 }

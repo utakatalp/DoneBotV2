@@ -2,11 +2,14 @@ package com.utakatalp.donebot.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.utakatalp.donebot.domain.engine.PomodoroEngine
 import com.utakatalp.donebot.domain.model.Task
 import com.utakatalp.donebot.domain.repository.TaskRepository
 import com.utakatalp.donebot.navigation.AddTask
 import com.utakatalp.donebot.navigation.Details
 import com.utakatalp.donebot.navigation.NavigationEffect
+import com.utakatalp.donebot.navigation.Pomodoro
+import com.utakatalp.donebot.navigation.PomodoroLaunch
 import com.utakatalp.donebot.ui.home.HomeContract.UiAction
 import com.utakatalp.donebot.ui.home.HomeContract.UiEffect
 import com.utakatalp.donebot.ui.home.HomeContract.UiState
@@ -27,6 +30,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val taskRepository: TaskRepository,
+    private val pomodoroEngine: PomodoroEngine,
 ) : ViewModel() {
 
     private val _selectedDate = MutableStateFlow(LocalDate.now())
@@ -71,6 +75,11 @@ class HomeViewModel @Inject constructor(
             UiAction.OnPreviousMonth -> _displayedMonth.value = _displayedMonth.value.minusMonths(1)
             UiAction.OnNextMonth -> _displayedMonth.value = _displayedMonth.value.plusMonths(1)
             UiAction.OnAddTaskTap -> _navEffect.trySend(NavigationEffect.Navigate(AddTask))
+            UiAction.OnPomodoroTap -> _navEffect.trySend(
+                NavigationEffect.Navigate(
+                    if (pomodoroEngine.state.value.isRunning) Pomodoro else PomodoroLaunch,
+                ),
+            )
             UiAction.OnDeleteDialogConfirm -> confirmDelete()
             UiAction.OnDeleteDialogDismiss -> dismissDeleteDialog()
             UiAction.OnUndoDelete -> Unit

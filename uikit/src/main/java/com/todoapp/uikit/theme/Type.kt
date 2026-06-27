@@ -218,6 +218,10 @@ class TDTypography {
                 color = TDTheme.colors.brown,
             )
 
+    /**
+     * Body text aligned to the notebook-style paper background. The 28sp lineHeight matches
+     * the default `paperBackground` lineSpacing so every typed line rests on a paper rule.
+     */
     val journalHandwritingStyle: TextStyle
         @Composable
         get() =

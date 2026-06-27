@@ -19,5 +19,10 @@ import kotlinx.serialization.Serializable
 @Serializable data class Details(val taskId: Long) : AppKey
 @Serializable data object AddTask : AppKey
 
+// Pomodoro
+@Serializable data object PomodoroLaunch : AppKey
+@Serializable data object Pomodoro : AppKey
+@Serializable data object AddPomodoroTimer : AppKey
+
 // Profile tab sub-routes
 @Serializable data object Settings : AppKey

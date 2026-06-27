@@ -93,7 +93,7 @@ internal fun darkColors(
     groupTaskFilterColor: Color = Color(0xFFFF0000),
     lightRed: Color = Color(0xFF7A1F2B),
     red: Color = Color(0xFFFFB1B5),
-    crossRed: Color = Color(0xFFCF6679),
+    crossRed: Color = Color(0xFFCF6679), // Standard Material Dark Error
     statusCardGray: Color = Color(0xFF898DA1),
     bgColorPurple: Color = Color(0xFF2B2F5E),
     bgColor: Color = Color(0xFF121212),
@@ -101,7 +101,7 @@ internal fun darkColors(
     onBackground: Color = Color(0xFFE1E1E1),
     surface: Color = Color(0xFF1E1E1E),
     onSurface: Color = Color(0xFFE1E1E1),
-    primary: Color = Color(0xFF6C8AFF),
+    primary: Color = Color(0xFF6C8AFF), // Lighter primary for dark mode
     onPrimary: Color = Color(0xFF000000),
     lightPurple: Color = Color(0xFFA9BAFF),
     gray: Color = Color(0xFF9E9E9E),

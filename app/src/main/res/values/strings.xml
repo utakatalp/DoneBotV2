@@ -60,4 +60,36 @@
     <string name="addtask_save_button">Add Task</string>
     <string name="addtask_ok">OK</string>
     <string name="addtask_cancel">Cancel</string>
+    <!-- Pomodoro -->
+    <string name="pomodoro_launch_title">Pomodoro</string>
+    <string name="pomodoro_edit_settings_title">Edit Pomodoro</string>
+    <string name="pomodoro_back">Back</string>
+    <string name="pomodoro_start">Start</string>
+    <string name="pomodoro_save">Save</string>
+    <string name="pomodoro_total_time">Total time</string>
+    <string name="pomodoro_focus_minutes">Focus duration</string>
+    <string name="pomodoro_short_break_minutes">Short break</string>
+    <string name="pomodoro_long_break_minutes">Long break</string>
+    <string name="pomodoro_sessions">Sessions</string>
+    <string name="pomodoro_sections">Sections</string>
+    <string name="pomodoro_focus_minutes_short">Focus</string>
+    <string name="pomodoro_short_break_short">Short</string>
+    <string name="pomodoro_long_break_short">Long</string>
+    <string name="pomodoro_unit_min">min</string>
+    <string name="pomodoro_unit_minutes">minutes</string>
+    <string name="pomodoro_unit_sessions">per section</string>
+    <string name="pomodoro_unit_sections">cycles</string>
+    <string name="pomodoro_fab">Pomodoro</string>
+    <string name="pomodoro_mode_focus">Focus</string>
+    <string name="pomodoro_mode_short_break">Short break</string>
+    <string name="pomodoro_mode_long_break">Long break</string>
+    <string name="pomodoro_pause">Pause</string>
+    <string name="pomodoro_resume">Resume</string>
+    <string name="pomodoro_skip">Skip</string>
+    <string name="pomodoro_finish">Finish</string>
+    <string name="pomodoro_session_progress">Session %1$d / %2$d</string>
+    <string name="pomodoro_finish_dialog_title">End this Pomodoro?</string>
+    <string name="pomodoro_finish_dialog_message">The current session will stop and the queue will be cleared.</string>
+    <string name="pomodoro_finish_dialog_confirm">End</string>
+    <string name="pomodoro_finish_dialog_dismiss">Keep going</string>
 </resources>
