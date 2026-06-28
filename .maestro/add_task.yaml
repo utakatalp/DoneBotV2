@@ -1,0 +1,40 @@
+appId: com.utakatalp.donebot
+tags:
+  - tasks
+---
+- launchApp:
+    clearState: true
+- tapOn: "Continue as a Guest"
+- assertVisible: "No tasks yet"
+
+- tapOn:
+    text: "Add task"
+- assertVisible: "New Task"
+
+- tapOn: "What needs doing?"
+- inputText: "Maestro smoke task"
+- hideKeyboard
+
+- tapOn: "Pick a date"
+- assertVisible: "Select date"
+- tapOn:
+    text: "Today,.*"
+- tapOn: "OK"
+
+- tapOn:
+    text: "—"
+    index: 0
+- assertVisible: "Select hour"
+- tapOn: "OK"
+
+- tapOn:
+    text: "—"
+- assertVisible: "Select hour"
+- tapOn:
+    text: "10"
+- tapOn: "OK"
+
+- tapOn:
+    text: "Add Task"
+- assertNotVisible: "New Task"
+- assertVisible: "Maestro smoke task"

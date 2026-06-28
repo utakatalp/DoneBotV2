@@ -1,0 +1,62 @@
+appId: com.utakatalp.donebot
+tags:
+  - auth
+---
+- evalScript: ${output.email = 'maestro_' + Date.now() + '@example.com'}
+- evalScript: ${output.password = 'Maestro1!Pass'}
+- evalScript: ${output.fullName = 'Maestro Tester'}
+
+- launchApp:
+    clearState: true
+- assertVisible: "Manage What To Do"
+- tapOn: "Already have an account? Login"
+- assertVisible: "Welcome Back"
+- tapOn:
+    text: "Register"
+- assertVisible: "Create Account"
+
+- tapOn: "Full Name"
+- inputText: ${output.fullName}
+- hideKeyboard
+
+- tapOn:
+    text: "Email Address"
+- inputText: ${output.email}
+- hideKeyboard
+
+- tapOn:
+    text: "Password"
+    index: 0
+- inputText: ${output.password}
+- hideKeyboard
+
+- tapOn: "Confirm Password"
+- inputText: ${output.password}
+- hideKeyboard
+
+- tapOn: "Sign Up"
+- extendedWaitUntil:
+    visible: "No tasks yet"
+    timeout: 15000
+
+- launchApp:
+    clearState: true
+- tapOn: "Already have an account? Login"
+- assertVisible: "Welcome Back"
+
+- tapOn:
+    text: "Email Address"
+- inputText: ${output.email}
+- hideKeyboard
+
+- tapOn:
+    text: "Password"
+    index: 1
+- inputText: ${output.password}
+- hideKeyboard
+
+- tapOn:
+    text: "Login"
+- extendedWaitUntil:
+    visible: "No tasks yet"
+    timeout: 15000

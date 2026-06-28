@@ -1,0 +1,14 @@
+appId: com.utakatalp.donebot
+tags:
+  - smoke
+---
+- launchApp:
+    clearState: true
+- assertVisible: "Manage What To Do"
+- assertVisible: "Continue as a Guest"
+- tapOn: "Continue as a Guest"
+- assertVisible:
+    text: "Home"
+- assertVisible:
+    text: "Profile"
+- assertVisible: "No tasks yet"

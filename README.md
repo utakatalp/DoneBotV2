@@ -402,6 +402,24 @@ adb logcat -s WM-WorkerWrapper
 
 ---
 
+## UI tests (Maestro)
+
+Flows live in `.maestro/`:
+
+- `smoke_guest.yaml` — onboarding → guest → Home
+- `add_task.yaml` — create a task and assert it lands on Home
+- `register_and_login.yaml` — register a fresh account, then log back in
+
+Run all flows against a running emulator/device with the debug APK installed:
+
+```bash
+maestro test .maestro/
+```
+
+Recordings: [`smoke_guest.mp4`](.maestro/recordings/smoke_guest.mp4), [`add_task.mp4`](.maestro/recordings/add_task.mp4), [`register_and_login.mp4`](.maestro/recordings/register_and_login.mp4).
+
+---
+
 ## Backend
 
 The API surface lives at `https://api.candroid.dev/todos/` and is a Spring/Kotlin service. It's mounted under `/todos/` (nginx) with Spring `context-path: /todos`, so Retrofit relative paths like `tasks` resolve to `https://api.candroid.dev/todos/tasks`.
