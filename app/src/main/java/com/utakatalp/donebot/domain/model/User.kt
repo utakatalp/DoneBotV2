@@ -6,7 +6,7 @@ import androidx.compose.runtime.Immutable
 data class User(
     val id: Long,
     val email: String,
-    val displayName: String,
+    val displayName: String?,
     val avatarUrl: String? = null,
     val emailVerified: Boolean = false,
     val providers: List<String> = emptyList(),

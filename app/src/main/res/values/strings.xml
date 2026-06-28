@@ -36,6 +36,12 @@
     <string name="register_already_have_account">Already have an account? </string>
     <string name="register_login">Login</string>
     <string name="register_toggle_password">Toggle password visibility</string>
+    <!-- Profile -->
+    <string name="profile_guest_title">You\'re browsing as a guest</string>
+    <string name="profile_guest_description">Sign in to sync your tasks across devices.</string>
+    <string name="profile_login_button">Log In</string>
+    <string name="profile_register_button">Sign Up</string>
+    <string name="profile_authenticated_title">You\'re signed in</string>
     <!-- Home -->
     <string name="home_add_task">Add task</string>
     <string name="home_no_tasks_title">No tasks yet</string>

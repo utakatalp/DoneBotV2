@@ -3,7 +3,7 @@ package com.utakatalp.donebot.navigation
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 
-/** Drives the auth back stack (Splash → Login → Register). */
+/** Drives the auth back stack (Onboarding → Login → Register). */
 class AuthNavigator(val backStack: NavBackStack<NavKey>) {
     fun navigate(key: AppKey) = backStack.add(key)
     fun goBack() = backStack.removeLastOrNull()

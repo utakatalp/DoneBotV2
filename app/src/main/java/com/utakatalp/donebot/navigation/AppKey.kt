@@ -6,7 +6,6 @@ import kotlinx.serialization.Serializable
 @Serializable sealed interface AppKey : NavKey
 
 // Auth flow
-@Serializable data object Splash : AppKey
 @Serializable data object Onboarding : AppKey
 @Serializable data object Login : AppKey
 @Serializable data object Register : AppKey

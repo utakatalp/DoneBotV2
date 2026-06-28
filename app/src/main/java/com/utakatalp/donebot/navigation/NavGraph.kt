@@ -37,28 +37,33 @@ import com.utakatalp.donebot.ui.pomodorolaunch.PomodoroLaunchScreen
 import com.utakatalp.donebot.ui.pomodorolaunch.PomodoroLaunchViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.utakatalp.donebot.ui.addtask.AddTaskViewModel
+import com.utakatalp.donebot.ui.home.HomeViewModel
 import com.utakatalp.donebot.ui.login.LoginScreen
 import com.utakatalp.donebot.ui.login.LoginViewModel
 import com.utakatalp.donebot.ui.onboarding.OnboardingScreen
 import com.utakatalp.donebot.ui.onboarding.OnboardingViewModel
 import com.utakatalp.donebot.ui.profile.ProfileScreen
+import com.utakatalp.donebot.ui.profile.ProfileViewModel
 import com.utakatalp.donebot.ui.register.RegisterScreen
 import com.utakatalp.donebot.ui.register.RegisterViewModel
 import com.utakatalp.donebot.ui.settings.SettingsScreen
-import com.utakatalp.donebot.ui.splash.SplashScreen
 
 @Composable
-fun AuthNavHost(onAuthenticated: () -> Unit) {
-    val backStack = rememberNavBackStack(Onboarding as NavKey)
+fun AuthNavHost(
+    onAuthenticated: () -> Unit,
+    startAt: AppKey = Onboarding,
+    onCancel: (() -> Unit)? = null,
+) {
+    val backStack = rememberNavBackStack(startAt as NavKey)
     val navigator = remember { AuthNavigator(backStack) }
 
     NavDisplay(
         backStack = backStack,
-        onBack = { navigator.goBack() },
+        onBack = {
+            if (backStack.size <= 1 && onCancel != null) onCancel()
+            else navigator.goBack()
+        },
         entryProvider = entryProvider {
-            entry<Splash> {
-                SplashScreen()
-            }
             entry<Onboarding> {
                 val viewModel = hiltViewModel<OnboardingViewModel>()
                 NavigationEffectController(
@@ -117,7 +122,10 @@ fun AuthNavHost(onAuthenticated: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainNavHost(onLogout: () -> Unit) {
+fun MainNavHost(
+    onLogout: () -> Unit,
+    onRequestAuth: (AppKey) -> Unit,
+) {
     val navState = rememberMainNavigationState()
     val navigator = remember(navState) { MainNavigator(navState) }
     val bottomSheetStrategy = remember { BottomSheetSceneStrategy<NavKey>() }
@@ -125,7 +133,7 @@ fun MainNavHost(onLogout: () -> Unit) {
     val entries = navState.toDecoratedEntries(
         entryProvider {
             entry<Home> {
-                val viewModel = hiltViewModel<com.utakatalp.donebot.ui.home.HomeViewModel>()
+                val viewModel = hiltViewModel<HomeViewModel>()
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
                 NavigationEffectController(
                     navEffect = viewModel.navEffect,
@@ -201,7 +209,20 @@ fun MainNavHost(onLogout: () -> Unit) {
                 )
             }
             entry<Profile> {
-                ProfileScreen()
+                val viewModel = hiltViewModel<ProfileViewModel>()
+                NavigationEffectController(
+                    navEffect = viewModel.navEffect,
+                    onNavigate = { key ->
+                        when (key) {
+                            Login, Register -> onRequestAuth(key)
+                            else -> navigator.navigate(key)
+                        }
+                    },
+                )
+                ProfileScreen(
+                    uiState = viewModel.uiState,
+                    onAction = viewModel::onAction,
+                )
             }
             entry<Settings> {
                 SettingsScreen()

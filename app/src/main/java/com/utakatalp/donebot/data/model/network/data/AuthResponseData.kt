@@ -14,7 +14,7 @@ data class AuthResponseData(
 data class UserData(
     val id: Long,
     val email: String,
-    val displayName: String,
+    val displayName: String?,
     val avatarUrl: String? = null,
     val emailVerified: Boolean = false,
     val providers: List<String> = emptyList(),

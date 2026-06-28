@@ -27,11 +27,11 @@ android {
     buildTypes {
         debug {
             buildConfigField("String", "DATABASE_NAME", "\"donebot_debug.db\"")
-            buildConfigField("String", "BASE_URL", "\"https://donebot-backend.onrender.com/\"")
+            buildConfigField("String", "BASE_URL", "\"https://api.candroid.dev/todos/\"")
         }
         release {
             buildConfigField("String", "DATABASE_NAME", "\"donebot.db\"")
-            buildConfigField("String", "BASE_URL", "\"https://donebot-backend.onrender.com/\"")
+            buildConfigField("String", "BASE_URL", "\"https://api.candroid.dev/todos/\"")
             optimization {
                 enable = false
             }

@@ -19,6 +19,6 @@ interface SessionPreferences {
     suspend fun saveSession(session: AuthSession) {
         setAccessToken(session.accessToken)
         setRefreshToken(session.refreshToken)
-        setExpiresAt(session.expiresIn)
+        setExpiresAt(System.currentTimeMillis() + session.expiresIn * 1000)
     }
 }

@@ -1,19 +1,15 @@
 package com.utakatalp.donebot.ui.profile
 
+import androidx.compose.runtime.Immutable
+
 object ProfileContract {
-    data class State(
-        val isLoading: Boolean = false,
-        val error: String? = null
+    @Immutable
+    data class UiState(
+        val isAuthenticated: Boolean = false,
     )
 
-    sealed interface Event {
-        object LogoutClicked : Event
-        object SettingsClicked : Event
-    }
-
-    sealed interface Effect {
-        object NavigateToLogin : Effect
-        object NavigateToSettings : Effect
-        data class ShowError(val message: String) : Effect
+    sealed interface UiAction {
+        data object OnLoginTap : UiAction
+        data object OnRegisterTap : UiAction
     }
 }
