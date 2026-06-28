@@ -50,7 +50,7 @@ class AddTaskViewModel @Inject constructor(
             UiAction.OnStartTimeDismiss -> _uiState.update { it.copy(isStartTimePickerOpen = false) }
             UiAction.OnEndTimeTap -> _uiState.update { it.copy(isEndTimePickerOpen = true) }
             UiAction.OnEndTimeDismiss -> _uiState.update { it.copy(isEndTimePickerOpen = false) }
-            UiAction.OnSaveTap -> handleSaveTap()
+            UiAction.OnSaveTap -> trySave()
             UiAction.OnDismissTap -> emitNav(NavigationEffect.GoBack)
         }
     }
@@ -86,7 +86,7 @@ class AddTaskViewModel @Inject constructor(
         )
     }
 
-    private fun handleSaveTap() {
+    private fun trySave() {
         hasSubmittedOnce = true
         val state = _uiState.value
         val titleError = validateTitle(state.title)
@@ -111,7 +111,7 @@ class AddTaskViewModel @Inject constructor(
         _uiState.update { it.copy(isSaving = true) }
         addTaskUseCase(state.toNewTask())
             .onSuccess { emitNav(NavigationEffect.GoBack) }
-            .onFailure { onAddTaskFailure(it) }
+            .onFailure { emitEffect(UiEffect.ShowError(it.message ?: "Failed to save task")) }
         _uiState.update { it.copy(isSaving = false) }
     }
 
@@ -122,11 +122,6 @@ class AddTaskViewModel @Inject constructor(
         timeStart = timeStart!!,
         timeEnd = timeEnd!!,
     )
-
-    private fun onAddTaskFailure(error: Throwable) {
-        _uiState.update { it.copy(isSaving = false) }
-        emitEffect(UiEffect.ShowError(error.message ?: "Failed to save task"))
-    }
 
     private fun validateTitle(title: String): AddTaskError? = when {
         title.isBlank() -> AddTaskError("Please enter a title")

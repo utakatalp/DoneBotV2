@@ -160,17 +160,31 @@ The overlay is the preferred surface; if the user denies overlay permission at f
 ### Scheduling
 
 ```
-AddTaskScreen → AddTaskViewModel.onSave()
-  → AddTaskUseCase (creates Task in domain)
-    → TaskRepositoryImpl.addTask() (writes to Room, fires remote push)
-    → ScheduleTaskAlarmUseCase
-        ↓
-        AlarmScheduler.scheduleForTask(AlarmItem)
-        ↓
-        AlarmManager.setExactAndAllowWhileIdle(RTC_WAKEUP, fireAt, pendingIntent)
+AddTaskScreen
+   │  tap "Save"
+   ▼
+AddTaskViewModel.onAction(UiAction.OnSaveTap)        ← MVI: single public entry
+   │  validate, build Task
+   ▼
+AddTaskUseCase.invoke(task)                          ← orchestrates the two side effects
+   ├─► TaskRepository.addTask(task)                    writes to Room (PENDING_CREATE),
+   │                                                   fires fire-and-forget POST on @ApplicationScope
+   └─► ScheduleTaskAlarmUseCase(localId, task)         only if addTask returned a localId
+            │  compute fireAt = taskTime − leadMinutes,
+            │  skip if fireAt ≤ now or task is completed
+            ▼
+       AlarmScheduler.scheduleForTask(AlarmItem)
+            ▼
+       AlarmManager.setExactAndAllowWhileIdle(
+           RTC_WAKEUP, fireAt, pendingIntent)
 ```
 
 The `PendingIntent` carries an `EXTRA_FIRE_TARGET` so the receiver can later distinguish "show overlay" vs "post notification" routing decisions.
+
+Two MVI shapes worth noting in the diagram:
+
+- **VM's public API is `onAction(UiAction)` only.** No `onSave()`, `onTitleChange()`, etc. method exists on the public surface — the UI dispatches sealed-class actions, the VM resolves them in a `when`.
+- **The use case is the orchestrator, not the VM.** `AddTaskUseCase` owns the "add a task means persist it AND schedule its alarm" contract. The VM only knows about a single domain operation. Adding/removing side effects (e.g., enqueue an analytics event) happens inside the use case, not the VM.
 
 ### Fire-out
 
