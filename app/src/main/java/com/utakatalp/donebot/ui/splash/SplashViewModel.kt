@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.utakatalp.donebot.common.DomainException
 import com.utakatalp.donebot.domain.repository.AuthRepository
 import com.utakatalp.donebot.domain.repository.SessionPreferences
+import com.utakatalp.donebot.domain.repository.TaskRepository
+import com.utakatalp.donebot.domain.repository.TaskSyncRepository
 import com.utakatalp.donebot.ui.splash.SplashContract.UiAction
 import com.utakatalp.donebot.ui.splash.SplashContract.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,6 +20,8 @@ import javax.inject.Inject
 class SplashViewModel @Inject constructor(
     private val sessionPreferences: SessionPreferences,
     private val authRepository: AuthRepository,
+    private val taskRepository: TaskRepository,
+    private val taskSyncRepository: TaskSyncRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState>(UiState.Resolving)
@@ -34,6 +38,7 @@ class SplashViewModel @Inject constructor(
             UiAction.OnAuthenticated -> _uiState.value = UiState.EnterApp
             UiAction.OnCancelAuth -> _uiState.value = UiState.EnterApp
             UiAction.OnLoggedOut -> viewModelScope.launch {
+                taskRepository.clearAll()
                 sessionPreferences.clear()
                 _uiState.value = UiState.NeedsAuth()
             }
@@ -66,6 +71,7 @@ class SplashViewModel @Inject constructor(
         authRepository.refresh(refreshToken).fold(
             onSuccess = { session ->
                 sessionPreferences.saveSession(session)
+                taskSyncRepository.syncPendingTasks()
                 UiState.EnterApp
             },
             onFailure = { error ->

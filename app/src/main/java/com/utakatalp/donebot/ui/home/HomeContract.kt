@@ -18,6 +18,7 @@ object HomeContract {
             val taskDates: Set<LocalDate> = emptySet(),
             val pendingDeleteTask: Task? = null,
             val isDeleteDialogOpen: Boolean = false,
+            val isRefreshing: Boolean = false,
         ) : UiState
 
         data class Error(val message: String) : UiState
@@ -36,6 +37,7 @@ object HomeContract {
         data object OnDeleteDialogDismiss : UiAction
         data object OnUndoDelete : UiAction
         data object OnRetry : UiAction
+        data object OnRefresh : UiAction
     }
 
     sealed interface UiEffect {

@@ -11,12 +11,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,32 +32,39 @@ import com.utakatalp.donebot.ui.home.HomeContract.UiState
 import com.utakatalp.donebot.ui.theme.DoneBotTheme
 import java.time.LocalDate
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun HomeContent(
     uiState: UiState.Success,
     onAction: (UiAction) -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            TDMonthlyDatePicker(
-                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
-                displayedMonth = uiState.displayedMonth,
-                selectedDate = uiState.selectedDate,
-                taskDates = uiState.taskDates,
-                onDateSelect = { onAction(UiAction.OnDateSelect(it)) },
-                onPreviousMonth = { onAction(UiAction.OnPreviousMonth) },
-                onNextMonth = { onAction(UiAction.OnNextMonth) },
-                today = LocalDate.now(),
-            )
-            HomeTaskList(
-                tasks = uiState.tasks.filter { it.id != uiState.pendingDeleteTask?.id },
-                onTaskCheck = { onAction(UiAction.OnTaskCheck(it)) },
-                onTaskClick = { onAction(UiAction.OnTaskClick(it)) },
-                onTaskLongPress = { onAction(UiAction.OnTaskLongPress(it)) },
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp),
-            )
+        PullToRefreshBox(
+            modifier = Modifier.fillMaxSize(),
+            isRefreshing = uiState.isRefreshing,
+            onRefresh = { onAction(UiAction.OnRefresh) },
+        ) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                TDMonthlyDatePicker(
+                    modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
+                    displayedMonth = uiState.displayedMonth,
+                    selectedDate = uiState.selectedDate,
+                    taskDates = uiState.taskDates,
+                    onDateSelect = { onAction(UiAction.OnDateSelect(it)) },
+                    onPreviousMonth = { onAction(UiAction.OnPreviousMonth) },
+                    onNextMonth = { onAction(UiAction.OnNextMonth) },
+                    today = LocalDate.now(),
+                )
+                HomeTaskList(
+                    tasks = uiState.tasks.filter { it.id != uiState.pendingDeleteTask?.id },
+                    onTaskCheck = { onAction(UiAction.OnTaskCheck(it)) },
+                    onTaskClick = { onAction(UiAction.OnTaskClick(it)) },
+                    onTaskLongPress = { onAction(UiAction.OnTaskLongPress(it)) },
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                )
+            }
         }
 
         Column(

@@ -9,4 +9,7 @@ interface TaskRepository {
     suspend fun addTask(task: Task): Result<Long>
     suspend fun updateTask(task: Task): Result<Unit>
     suspend fun deleteTask(id: Long): Result<Unit>
+    suspend fun clearAll()
+    suspend fun syncLocalTasksToServer(): Result<Unit>
+    suspend fun syncRemoteTasksWithLocal(): Result<Unit>
 }

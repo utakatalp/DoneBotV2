@@ -2,6 +2,9 @@ package com.utakatalp.donebot.data.mapper
 
 import com.utakatalp.donebot.data.model.entity.SyncStatus
 import com.utakatalp.donebot.data.model.entity.TaskEntity
+import com.utakatalp.donebot.data.model.network.data.TaskData
+import com.utakatalp.donebot.data.model.network.request.CreateTaskRequest
+import com.utakatalp.donebot.data.model.network.request.UpdateTaskRequest
 import com.utakatalp.donebot.domain.model.Task
 import java.time.LocalDate
 import java.time.LocalTime
@@ -28,6 +31,42 @@ fun Task.toEntity(
     date = date.toEpochDay(),
     timeStart = (timeStart.hour * 60 + timeStart.minute).toLong(),
     timeEnd = (timeEnd.hour * 60 + timeEnd.minute).toLong(),
+    isCompleted = isCompleted,
+    syncStatus = syncStatus,
+    orderIndex = orderIndex,
+)
+
+fun Task.toCreateRequest(): CreateTaskRequest = CreateTaskRequest(
+    title = title,
+    description = description,
+    date = date.toEpochDay(),
+    timeStart = (timeStart.hour * 60 + timeStart.minute).toLong(),
+    timeEnd = (timeEnd.hour * 60 + timeEnd.minute).toLong(),
+    isCompleted = isCompleted,
+)
+
+fun Task.toUpdateRequest(remoteId: Long): UpdateTaskRequest = UpdateTaskRequest(
+    id = remoteId,
+    title = title,
+    description = description,
+    date = date.toEpochDay(),
+    timeStart = (timeStart.hour * 60 + timeStart.minute).toLong(),
+    timeEnd = (timeEnd.hour * 60 + timeEnd.minute).toLong(),
+    isCompleted = isCompleted,
+)
+
+fun TaskData.toEntity(
+    localId: Long = 0L,
+    syncStatus: SyncStatus = SyncStatus.SYNCED,
+    orderIndex: Int = 0,
+): TaskEntity = TaskEntity(
+    id = localId,
+    remoteId = id,
+    title = title,
+    description = description,
+    date = date,
+    timeStart = timeStart,
+    timeEnd = timeEnd,
     isCompleted = isCompleted,
     syncStatus = syncStatus,
     orderIndex = orderIndex,

@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.utakatalp.donebot.domain.model.AuthSession
 import com.utakatalp.donebot.domain.repository.SessionPreferences
+import com.utakatalp.donebot.domain.repository.TaskSyncRepository
 import com.utakatalp.donebot.domain.repository.UserRepository
 import com.utakatalp.donebot.navigation.Home
 import com.utakatalp.donebot.navigation.Login
@@ -31,6 +32,7 @@ private const val PASSWORD_STRONG_LENGTH = 12
 class RegisterViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val sessionPreferences: SessionPreferences,
+    private val taskSyncRepository: TaskSyncRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(UiState())
@@ -132,6 +134,7 @@ class RegisterViewModel @Inject constructor(
 
     private suspend fun onRegisterSuccess(session: AuthSession) {
         sessionPreferences.saveSession(session)
+        taskSyncRepository.syncPendingTasks()
         _uiState.update { it.copy(isLoading = false, isRedirecting = true) }
         _navEffect.trySend(NavigationEffect.Navigate(Home))
     }

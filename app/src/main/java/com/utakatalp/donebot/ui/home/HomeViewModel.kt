@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.utakatalp.donebot.domain.engine.PomodoroEngine
 import com.utakatalp.donebot.domain.model.Task
 import com.utakatalp.donebot.domain.repository.TaskRepository
+import com.utakatalp.donebot.domain.repository.TaskSyncRepository
 import com.utakatalp.donebot.navigation.AddTask
 import com.utakatalp.donebot.navigation.Details
 import com.utakatalp.donebot.navigation.NavigationEffect
@@ -15,6 +16,7 @@ import com.utakatalp.donebot.ui.home.HomeContract.UiEffect
 import com.utakatalp.donebot.ui.home.HomeContract.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -27,9 +29,12 @@ import java.time.LocalDate
 import java.time.YearMonth
 import javax.inject.Inject
 
+private const val REFRESH_INDICATOR_MIN_MS = 1500L
+
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val taskRepository: TaskRepository,
+    private val taskSyncRepository: TaskSyncRepository,
     private val pomodoroEngine: PomodoroEngine,
 ) : ViewModel() {
 
@@ -37,14 +42,16 @@ class HomeViewModel @Inject constructor(
     private val _displayedMonth = MutableStateFlow(YearMonth.now())
     private val _pendingDeleteTask = MutableStateFlow<Task?>(null)
     private val _isDeleteDialogOpen = MutableStateFlow(false)
+    private val _isRefreshing = MutableStateFlow(false)
 
     val uiState: StateFlow<UiState> = combine(
         _selectedDate,
         _displayedMonth,
         taskRepository.getTasks(),
         _pendingDeleteTask,
-        _isDeleteDialogOpen,
-    ) { date, month, allTasks, pendingDelete, dialogOpen ->
+        combine(_isDeleteDialogOpen, _isRefreshing, ::Pair),
+    ) { date, month, allTasks, pendingDelete, flags ->
+        val (dialogOpen, refreshing) = flags
         UiState.Success(
             selectedDate = date,
             displayedMonth = month,
@@ -52,6 +59,7 @@ class HomeViewModel @Inject constructor(
             taskDates = allTasks.map { it.date }.toSet(),
             pendingDeleteTask = pendingDelete,
             isDeleteDialogOpen = dialogOpen,
+            isRefreshing = refreshing,
         ) as UiState
     }
         .catch { error -> emit(UiState.Error(error.message ?: "Failed to load tasks")) }
@@ -84,6 +92,16 @@ class HomeViewModel @Inject constructor(
             UiAction.OnDeleteDialogDismiss -> dismissDeleteDialog()
             UiAction.OnUndoDelete -> Unit
             UiAction.OnRetry -> Unit
+            UiAction.OnRefresh -> refresh()
+        }
+    }
+
+    private fun refresh() {
+        _isRefreshing.value = true
+        taskSyncRepository.fetchTasks(force = true)
+        viewModelScope.launch {
+            delay(REFRESH_INDICATOR_MIN_MS)
+            _isRefreshing.value = false
         }
     }
 
