@@ -1,6 +1,5 @@
 package com.utakatalp.donebot.data.repository
 
-import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -12,14 +11,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-private const val TAG = "AuthFlow"
-
 class AuthSessionRepositoryImpl @Inject constructor(
     private val dataStore: DataStore<Preferences>,
 ) : AuthSessionRepository {
 
     override suspend fun setAccessToken(token: String) {
-        Log.d(TAG, "[AuthSession] setAccessToken ...${token.takeLast(8)}")
         dataStore.edit { it[ACCESS_TOKEN] = token }
     }
 
@@ -27,7 +23,6 @@ class AuthSessionRepositoryImpl @Inject constructor(
         dataStore.data.map { it[ACCESS_TOKEN] }.first()?.ifBlank { null }
 
     override suspend fun setRefreshToken(token: String) {
-        Log.d(TAG, "[AuthSession] setRefreshToken ...${token.takeLast(8)}")
         dataStore.edit { it[REFRESH_TOKEN] = token }
     }
 
@@ -45,7 +40,6 @@ class AuthSessionRepositoryImpl @Inject constructor(
         dataStore.data.map { it[EXPIRES_AT] }.first()
 
     override suspend fun clear() {
-        Log.d(TAG, "[AuthSession] clear() — wiping access + refresh + expiresAt", Throwable("clear caller"))
         dataStore.edit {
             it.remove(ACCESS_TOKEN)
             it.remove(REFRESH_TOKEN)

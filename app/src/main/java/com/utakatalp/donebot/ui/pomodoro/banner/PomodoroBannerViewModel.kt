@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
@@ -37,9 +38,11 @@ class PomodoroBannerViewModel @Inject constructor(
 
     fun onAction(action: UiAction) {
         when (action) {
-            UiAction.OnTap -> _navEffect.trySend(NavigationEffect.Navigate(Pomodoro))
+            UiAction.OnTap -> emitNav(NavigationEffect.Navigate(Pomodoro))
             UiAction.OnPlayPauseTap -> if (engine.state.value.isRunning) engine.pause() else engine.start()
             UiAction.OnSkipTap -> engine.skip()
         }
     }
+
+    private fun emitNav(effect: NavigationEffect) = viewModelScope.launch { _navEffect.send(effect) }
 }

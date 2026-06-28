@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
-import android.util.Log
 import com.utakatalp.donebot.data.notification.NotificationService
 import com.utakatalp.donebot.domain.alarm.AlarmScheduler
 import com.utakatalp.donebot.domain.model.AlarmItem
@@ -24,11 +23,6 @@ class AlarmSchedulerImpl(
             .toInstant()
             .toEpochMilli()
         val requestCode = taskRequestCode(item.taskId)
-        Log.d(
-            TAG,
-            "[AlarmSchedulerImpl] scheduleForTask taskId=${item.taskId} " +
-                "fireAt=${item.fireAt} triggerAtMillis=$triggerAtMillis requestCode=$requestCode",
-        )
         scheduleAt(
             triggerAtMillis = triggerAtMillis,
             pendingIntent = buildFirePendingIntent(
@@ -40,7 +34,6 @@ class AlarmSchedulerImpl(
 
     override fun cancelForTask(taskId: Long) {
         val requestCode = taskRequestCode(taskId)
-        Log.d(TAG, "[AlarmSchedulerImpl] cancelForTask taskId=$taskId requestCode=$requestCode")
         alarmManager.cancel(
             buildFirePendingIntent(
                 requestCode = requestCode,
@@ -61,11 +54,6 @@ class AlarmSchedulerImpl(
 
     private fun buildPreferredBroadcast(item: AlarmItem): Intent {
         val canDrawOverlays = Settings.canDrawOverlays(context)
-        Log.d(
-            TAG,
-            "[AlarmSchedulerImpl] buildPreferredBroadcast taskId=${item.taskId} " +
-                "canDrawOverlays=$canDrawOverlays -> target=${if (canDrawOverlays) "OVERLAY" else "NOTIFICATION"}",
-        )
         return if (canDrawOverlays) buildOverlayBroadcast(item) else buildNotificationBroadcast(item)
     }
 
@@ -88,33 +76,20 @@ class AlarmSchedulerImpl(
     private fun scheduleAt(triggerAtMillis: Long, pendingIntent: PendingIntent) {
         val now = System.currentTimeMillis()
         if (triggerAtMillis <= now) {
-            Log.d(
-                TAG,
-                "[AlarmSchedulerImpl] scheduleAt: SKIPPED past trigger " +
-                    "(triggerAtMillis=$triggerAtMillis now=$now)",
-            )
             return
         }
         val canExact = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms()
         val deltaSec = (triggerAtMillis - now) / 1000
-        Log.d(
-            TAG,
-            "[AlarmSchedulerImpl] scheduleAt: arming alarm in ${deltaSec}s " +
-                "(canScheduleExactAlarms=$canExact)",
-        )
         runCatching {
             if (!canExact) {
                 alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
-                Log.d(TAG, "[AlarmSchedulerImpl] scheduleAt: set INEXACT (canScheduleExactAlarms=false)")
             } else {
                 alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
-                Log.d(TAG, "[AlarmSchedulerImpl] scheduleAt: set EXACT")
             }
-        }.onFailure { Log.d(TAG, "[AlarmSchedulerImpl] scheduleAt FAILED", it) }
+        }
     }
 
     private companion object {
         const val TASK_REQUEST_BASE = 0x0200_0000L
-        const val TAG = "AlarmFlow"
     }
 }

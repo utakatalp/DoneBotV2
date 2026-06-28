@@ -51,7 +51,7 @@ class AddTaskViewModel @Inject constructor(
             UiAction.OnEndTimeTap -> _uiState.update { it.copy(isEndTimePickerOpen = true) }
             UiAction.OnEndTimeDismiss -> _uiState.update { it.copy(isEndTimePickerOpen = false) }
             UiAction.OnSaveTap -> handleSaveTap()
-            UiAction.OnDismissTap -> _navEffect.trySend(NavigationEffect.GoBack)
+            UiAction.OnDismissTap -> emitNav(NavigationEffect.GoBack)
         }
     }
 
@@ -110,7 +110,7 @@ class AddTaskViewModel @Inject constructor(
         val state = _uiState.value
         _uiState.update { it.copy(isSaving = true) }
         addTaskUseCase(state.toNewTask())
-            .onSuccess { _navEffect.trySend(NavigationEffect.GoBack) }
+            .onSuccess { emitNav(NavigationEffect.GoBack) }
             .onFailure { onAddTaskFailure(it) }
         _uiState.update { it.copy(isSaving = false) }
     }
@@ -125,7 +125,7 @@ class AddTaskViewModel @Inject constructor(
 
     private fun onAddTaskFailure(error: Throwable) {
         _uiState.update { it.copy(isSaving = false) }
-        _uiEffect.trySend(UiEffect.ShowError(error.message ?: "Failed to save task"))
+        emitEffect(UiEffect.ShowError(error.message ?: "Failed to save task"))
     }
 
     private fun validateTitle(title: String): AddTaskError? = when {
@@ -143,4 +143,7 @@ class AddTaskViewModel @Inject constructor(
         !end.isAfter(start) -> AddTaskError("End time must be after start time")
         else -> null
     }
+
+    private fun emitEffect(effect: UiEffect) = viewModelScope.launch { _uiEffect.send(effect) }
+    private fun emitNav(effect: NavigationEffect) = viewModelScope.launch { _navEffect.send(effect) }
 }

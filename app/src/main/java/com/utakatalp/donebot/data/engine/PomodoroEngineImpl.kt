@@ -1,6 +1,5 @@
 package com.utakatalp.donebot.data.engine
 
-import android.util.Log
 import com.utakatalp.donebot.domain.engine.PomodoroEngine
 import com.utakatalp.donebot.domain.engine.PomodoroEngineState
 import com.utakatalp.donebot.domain.engine.PomodoroEvent
@@ -28,7 +27,6 @@ import javax.inject.Singleton
 import kotlin.time.Duration.Companion.milliseconds
 
 private const val TICK_MILLIS = 1_000L
-private const val TAG = "PomodoroEngine"
 
 @Singleton
 class PomodoroEngineImpl @Inject constructor() : PomodoroEngine {
@@ -185,27 +183,16 @@ class PomodoroEngineImpl @Inject constructor() : PomodoroEngine {
 
     /** Pop the current session, emit events, load the next one or shut the actor down. Actor-only. */
     private suspend fun advanceToNextSession(): Boolean {
-        Log.d(
-            TAG,
-            "advanceToNextSession: currentIndex=${_state.value.currentSessionIndex}, " +
-                "remaining=${_state.value.remainingSeconds}, queueSize=${queue.size}",
-        )
         _events.emit(PomodoroEvent.SessionFinished)
         queue.removeFirstOrNull()
         val next = queue.firstOrNull()
-        Log.d(TAG, "advanceToNextSession: removed current session, next=$next, queueSize=${queue.size}")
         if (next == null) {
-            Log.d(TAG, "advanceToNextSession: no next session, pomodoro finished")
             _events.emit(PomodoroEvent.PomodoroFinished)
             _state.update { PomodoroEngineState() }
             queue.clear()
             teardown()
             return false
         }
-        Log.d(
-            TAG,
-            "advanceToNextSession: loading next session mode=${next.mode}, duration=${next.durationSeconds}",
-        )
         _state.update {
             it.copy(
                 remainingSeconds = next.durationSeconds,

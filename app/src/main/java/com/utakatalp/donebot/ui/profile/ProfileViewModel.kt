@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
@@ -42,14 +43,17 @@ class ProfileViewModel @Inject constructor(
 
     fun onAction(action: UiAction) {
         when (action) {
-            UiAction.OnLoginTap -> _navEffect.trySend(NavigationEffect.Navigate(Login))
-            UiAction.OnRegisterTap -> _navEffect.trySend(NavigationEffect.Navigate(Register))
+            UiAction.OnLoginTap -> emitNav(NavigationEffect.Navigate(Login))
+            UiAction.OnRegisterTap -> emitNav(NavigationEffect.Navigate(Register))
             UiAction.OnLogoutTap -> _showLogoutDialog.value = true
             UiAction.OnLogoutDismiss -> _showLogoutDialog.value = false
             UiAction.OnLogoutConfirm -> {
                 _showLogoutDialog.value = false
-                _uiEffect.trySend(UiEffect.Logout)
+                emitEffect(UiEffect.Logout)
             }
         }
     }
+
+    private fun emitEffect(effect: UiEffect) = viewModelScope.launch { _uiEffect.send(effect) }
+    private fun emitNav(effect: NavigationEffect) = viewModelScope.launch { _navEffect.send(effect) }
 }

@@ -51,8 +51,8 @@ class PomodoroViewModel @Inject constructor(
         viewModelScope.launch {
             engine.events.collect { event ->
                 when (event) {
-                    PomodoroEvent.SessionFinished -> _uiEffect.trySend(UiEffect.SessionFinished)
-                    PomodoroEvent.PomodoroFinished -> _navEffect.trySend(NavigationEffect.GoBack)
+                    PomodoroEvent.SessionFinished -> emitEffect(UiEffect.SessionFinished)
+                    PomodoroEvent.PomodoroFinished -> emitNav(NavigationEffect.GoBack)
                 }
             }
         }
@@ -68,7 +68,10 @@ class PomodoroViewModel @Inject constructor(
                 _showFinishDialog.value = false
                 engine.finish()
             }
-            UiAction.OnBackTap -> _navEffect.trySend(NavigationEffect.GoBack)
+            UiAction.OnBackTap -> emitNav(NavigationEffect.GoBack)
         }
     }
+
+    private fun emitEffect(effect: UiEffect) = viewModelScope.launch { _uiEffect.send(effect) }
+    private fun emitNav(effect: NavigationEffect) = viewModelScope.launch { _navEffect.send(effect) }
 }

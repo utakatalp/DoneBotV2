@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 
 private const val INTERVAL = 1500L
 private const val BG_COUNT = 4
@@ -32,7 +33,7 @@ class OnboardingViewModel @Inject constructor() : ViewModel() {
     init {
         viewModelScope.launch {
             while (true) {
-                delay(INTERVAL)
+                delay(INTERVAL.milliseconds)
                 _uiState.update { it.copy(bgIndex = (it.bgIndex + 1) % BG_COUNT) }
             }
         }
@@ -40,8 +41,10 @@ class OnboardingViewModel @Inject constructor() : ViewModel() {
 
     fun onAction(action: UiAction) {
         when (action) {
-            UiAction.OnLoginTap -> _navEffect.trySend(NavigationEffect.Navigate(Login))
-            UiAction.OnGetStartedTap -> _navEffect.trySend(NavigationEffect.Navigate(Home))
+            UiAction.OnLoginTap -> emitNav(NavigationEffect.Navigate(Login))
+            UiAction.OnGetStartedTap -> emitNav(NavigationEffect.Navigate(Home))
         }
     }
+
+    private fun emitNav(effect: NavigationEffect) = viewModelScope.launch { _navEffect.send(effect) }
 }

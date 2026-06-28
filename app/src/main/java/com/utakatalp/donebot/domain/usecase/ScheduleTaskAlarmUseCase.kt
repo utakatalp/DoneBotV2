@@ -1,6 +1,5 @@
 package com.utakatalp.donebot.domain.usecase
 
-import android.util.Log
 import com.utakatalp.donebot.domain.alarm.AlarmScheduler
 import com.utakatalp.donebot.domain.model.AlarmItem
 import com.utakatalp.donebot.domain.model.Task
@@ -17,13 +16,7 @@ class ScheduleTaskAlarmUseCase @Inject constructor(
         val taskTime = LocalDateTime.of(task.date, task.timeStart)
         val fireAt = taskTime.minusMinutes(lead.toLong())
         val now = LocalDateTime.now()
-        Log.d(
-            TAG,
-            "[ScheduleTaskAlarmUseCase] taskId=$taskId title='${task.title}' " +
-                "taskTime=$taskTime lead=${lead}m fireAt=$fireAt now=$now completed=${task.isCompleted}",
-        )
         if (fireAt.isAfter(now) && !task.isCompleted) {
-            Log.d(TAG, "[ScheduleTaskAlarmUseCase] -> SCHEDULING alarm for taskId=$taskId at $fireAt")
             alarmScheduler.scheduleForTask(
                 AlarmItem(
                     fireAt = fireAt,
@@ -40,12 +33,7 @@ class ScheduleTaskAlarmUseCase @Inject constructor(
                         "Pick a later timeStart or a smaller lead in Settings."
                 else -> "unknown"
             }
-            Log.d(TAG, "[ScheduleTaskAlarmUseCase] -> CANCELLING alarm for taskId=$taskId reason=$reason")
             alarmScheduler.cancelForTask(taskId)
         }
-    }
-
-    private companion object {
-        const val TAG = "AlarmFlow"
     }
 }

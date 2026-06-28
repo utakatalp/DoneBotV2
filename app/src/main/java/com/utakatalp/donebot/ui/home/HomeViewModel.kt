@@ -38,12 +38,13 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 
 private const val REFRESH_INDICATOR_MIN_MS = 1500L
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    @ApplicationContext private val appContext: Context,
+    @param:ApplicationContext private val appContext: Context,
     private val taskRepository: TaskRepository,
     private val fetchTasksUseCase: FetchTasksUseCase,
     private val pomodoroEngine: PomodoroEngine,
@@ -90,9 +91,6 @@ class HomeViewModel @Inject constructor(
             _pendingDeleteTask,
             flags,
         ) { date, month, allTasks, pendingDelete, f ->
-            // Hoisted out of HomeContent — was running per-recomposition (every state change in
-            // the screen), allocating a new List + new LocalDate and defeating stability skipping
-            // on TDMonthlyDatePicker and HomeTaskList. Computed here means once per upstream emission.
             val visibleTasks = allTasks.filter { it.date == date && it.id != pendingDelete?.id }
             UiState.Success(
                 selectedDate = date,
@@ -117,16 +115,16 @@ class HomeViewModel @Inject constructor(
     fun onAction(action: UiAction) {
         when (action) {
             is UiAction.OnDateSelect -> {
-                _selectedDate.value = action.date
-                _displayedMonth.value = YearMonth.from(action.date)
+                _selectedDate.update { action.date }
+                _displayedMonth.update { YearMonth.from(action.date) }
             }
             is UiAction.OnTaskCheck -> toggleCompletion(action.task)
-            is UiAction.OnTaskClick -> _navEffect.trySend(NavigationEffect.Navigate(Details(action.task.id)))
+            is UiAction.OnTaskClick -> emitNav(NavigationEffect.Navigate(Details(action.task.id)))
             is UiAction.OnTaskLongPress -> openDeleteDialog(action.task)
-            UiAction.OnPreviousMonth -> _displayedMonth.value = _displayedMonth.value.minusMonths(1)
-            UiAction.OnNextMonth -> _displayedMonth.value = _displayedMonth.value.plusMonths(1)
-            UiAction.OnAddTaskTap -> _navEffect.trySend(NavigationEffect.Navigate(AddTask))
-            UiAction.OnPomodoroTap -> _navEffect.trySend(
+            UiAction.OnPreviousMonth -> _displayedMonth.update { it.minusMonths(1) }
+            UiAction.OnNextMonth -> _displayedMonth.update { it.plusMonths(1) }
+            UiAction.OnAddTaskTap -> emitNav(NavigationEffect.Navigate(AddTask))
+            UiAction.OnPomodoroTap -> emitNav(
                 NavigationEffect.Navigate(
                     if (pomodoroEngine.state.value.isRunning) Pomodoro else PomodoroLaunch,
                 ),
@@ -135,13 +133,13 @@ class HomeViewModel @Inject constructor(
             UiAction.OnDeleteDialogDismiss -> dismissDeleteDialog()
             UiAction.OnRetry -> _retryTrigger.update { it + 1 }
             UiAction.OnRefresh -> refresh()
-            UiAction.OnRecheckPermissions -> _neededPermissions.value = computeNeededPermissions()
+            UiAction.OnRecheckPermissions -> _neededPermissions.update { computeNeededPermissions() }
             is UiAction.OnPermissionGranted -> {
-                _dismissedPermissions.value = _dismissedPermissions.value - action.type
-                _neededPermissions.value = computeNeededPermissions()
+                _dismissedPermissions.update { it - action.type }
+                _neededPermissions.update { computeNeededPermissions() }
             }
             is UiAction.OnPermissionDismissed -> {
-                _dismissedPermissions.value = _dismissedPermissions.value + action.type
+                _dismissedPermissions.update { it + action.type }
             }
         }
     }
@@ -152,11 +150,11 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun refresh() {
-        _isRefreshing.value = true
+        _isRefreshing.update { true }
         fetchTasksUseCase(force = true)
         viewModelScope.launch {
-            delay(REFRESH_INDICATOR_MIN_MS)
-            _isRefreshing.value = false
+            delay(REFRESH_INDICATOR_MIN_MS.milliseconds)
+            _isRefreshing.update { false }
         }
     }
 
@@ -166,24 +164,27 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun openDeleteDialog(task: Task) {
-        _pendingDeleteTask.value = task
-        _isDeleteDialogOpen.value = true
+        _pendingDeleteTask.update { task }
+        _isDeleteDialogOpen.update { true }
     }
 
     private fun dismissDeleteDialog() {
-        _pendingDeleteTask.value = null
-        _isDeleteDialogOpen.value = false
+        _pendingDeleteTask.update { null }
+        _isDeleteDialogOpen.update { false }
     }
 
     private fun confirmDelete() = viewModelScope.launch {
         val target = _pendingDeleteTask.value ?: return@launch
-        _pendingDeleteTask.value = null
-        _isDeleteDialogOpen.value = false
+        _pendingDeleteTask.update { null }
+        _isDeleteDialogOpen.update { false }
         deleteTaskUseCase(target.id)
             .onFailure { emitError(it) }
     }
 
     private fun emitError(error: Throwable) {
-        _uiEffect.trySend(UiEffect.ShowError(error.message ?: "Something went wrong"))
+        emitEffect(UiEffect.ShowError(error.message ?: "Something went wrong"))
     }
+
+    private fun emitEffect(effect: UiEffect) = viewModelScope.launch { _uiEffect.send(effect) }
+    private fun emitNav(effect: NavigationEffect) = viewModelScope.launch { _navEffect.send(effect) }
 }

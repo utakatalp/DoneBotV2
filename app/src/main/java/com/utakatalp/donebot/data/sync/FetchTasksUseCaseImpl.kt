@@ -1,7 +1,6 @@
 package com.utakatalp.donebot.data.sync
 
 import android.content.Context
-import android.util.Log
 import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
@@ -29,19 +28,9 @@ class FetchTasksUseCaseImpl @Inject constructor(
         val sinceLast = now - lastFetchAt
         val withinCooldown = sinceLast < FETCH_COOLDOWN_MS
         if (!force && withinCooldown) {
-            Log.d(
-                TAG,
-                "[FetchTasksUseCase] SKIPPED (cooldown ${sinceLast}ms < ${FETCH_COOLDOWN_MS}ms; " +
-                    "pass force=true to override)",
-            )
             return
         }
         lastFetchAt = now
-        Log.d(
-            TAG,
-            "[FetchTasksUseCase] enqueue chain SyncWorker.then(FetchTasksWorker) " +
-                "(unique=$FETCH_WORK policy=REPLACE force=$force)",
-        )
 
         val constraints = networkConstraints()
         val sync = OneTimeWorkRequestBuilder<SyncWorker>()
@@ -63,6 +52,5 @@ class FetchTasksUseCaseImpl @Inject constructor(
     private companion object {
         const val FETCH_WORK = "donebot_fetch_work"
         const val FETCH_COOLDOWN_MS = 60_000L
-        const val TAG = "SyncFlow"
     }
 }

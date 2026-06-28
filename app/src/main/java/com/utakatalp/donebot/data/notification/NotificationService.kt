@@ -8,7 +8,6 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.utakatalp.donebot.MainActivity
 import com.utakatalp.donebot.R
@@ -25,7 +24,6 @@ class NotificationService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        Log.d(TAG, "[NotificationService] onCreate")
         OverlayServiceChannel.ensure(this)
         ReminderChannel.ensure(this)
     }
@@ -33,12 +31,9 @@ class NotificationService : Service() {
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         val message = intent.getStringExtra(EXTRA_MESSAGE)
         val minutesBefore = intent.getLongExtra(EXTRA_MINUTES_BEFORE, 0L)
-        Log.d(TAG, "[NotificationService] onStartCommand message='$message' minutesBefore=$minutesBefore")
         promoteToForeground()
         if (!message.isNullOrBlank()) {
             postReminder(message, minutesBefore.toInt())
-        } else {
-            Log.d(TAG, "[NotificationService] message blank, skipping postReminder")
         }
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf(startId)
@@ -56,7 +51,7 @@ class NotificationService : Service() {
         val title = if (minutesBefore == 0) {
             getString(R.string.notification_reminder_title_now)
         } else {
-            getString(R.string.notification_reminder_title_in_minutes, minutesBefore)
+            resources.getQuantityString(R.plurals.notification_reminder_title_in_minutes, minutesBefore, minutesBefore)
         }
         val notification = NotificationCompat.Builder(this, ReminderChannel.CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_popup_reminder)
@@ -67,11 +62,6 @@ class NotificationService : Service() {
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setAutoCancel(true)
             .build()
-        Log.d(
-            TAG,
-            "[NotificationService] postReminder id=$REMINDER_NOTIFICATION_ID " +
-                "channel=${ReminderChannel.CHANNEL_ID} title='$title' text='$contentText'",
-        )
         notificationManager.notify(REMINDER_NOTIFICATION_ID, notification)
     }
 
@@ -95,8 +85,7 @@ class NotificationService : Service() {
             } else {
                 startForeground(OverlayServiceChannel.FOREGROUND_NOTIFICATION_ID, placeholder)
             }
-            Log.d(TAG, "[NotificationService] promoteToForeground: success")
-        }.onFailure { Log.d(TAG, "[NotificationService] promoteToForeground: FAILED", it) }
+        }
     }
 
     override fun onDestroy() {
@@ -109,6 +98,5 @@ class NotificationService : Service() {
         const val EXTRA_MESSAGE = "extra_message"
         const val EXTRA_MINUTES_BEFORE = "extra_minutes_before"
         private const val REMINDER_NOTIFICATION_ID = 1
-        private const val TAG = "AlarmFlow"
     }
 }

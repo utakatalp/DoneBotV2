@@ -1,7 +1,6 @@
 package com.utakatalp.donebot.common
 
 import android.database.sqlite.SQLiteException
-import android.util.Log
 import com.utakatalp.donebot.data.model.network.response.BaseResponse
 import com.utakatalp.donebot.data.model.network.response.ErrorResponse
 import kotlinx.coroutines.CancellationException

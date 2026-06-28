@@ -47,8 +47,8 @@ class LoginViewModel @Inject constructor(
             is UiAction.OnPasswordChange -> updatePassword(action.value)
             UiAction.OnPasswordVisibilityTap -> togglePasswordVisibility()
             UiAction.OnLoginTap -> tryLogin()
-            UiAction.OnForgotPasswordTap -> _uiEffect.trySend(UiEffect.ShowToast("Forgot password not implemented yet"))
-            UiAction.OnRegisterTap -> _navEffect.trySend(NavigationEffect.Navigate(Register))
+            UiAction.OnForgotPasswordTap -> emitEffect(UiEffect.ShowToast("Forgot password not implemented yet"))
+            UiAction.OnRegisterTap -> emitNav(NavigationEffect.Navigate(Register))
         }
     }
 
@@ -95,7 +95,7 @@ class LoginViewModel @Inject constructor(
                     // existing server tasks until the next foreground or pull-to-refresh.
                     fetchTasksUseCase(force = true)
                     _uiState.update { it.copy(isLoading = false) }
-                    _navEffect.trySend(NavigationEffect.Navigate(Home))
+                    emitNav(NavigationEffect.Navigate(Home))
                 }
                 .onFailure { error ->
                     _uiState.update {
@@ -119,4 +119,7 @@ class LoginViewModel @Inject constructor(
         password.length < PASSWORD_MIN_LENGTH -> LoginError("Password must be at least $PASSWORD_MIN_LENGTH characters")
         else -> null
     }
+
+    private fun emitEffect(effect: UiEffect) = viewModelScope.launch { _uiEffect.send(effect) }
+    private fun emitNav(effect: NavigationEffect) = viewModelScope.launch { _navEffect.send(effect) }
 }

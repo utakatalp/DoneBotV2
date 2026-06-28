@@ -59,8 +59,8 @@ class PomodoroLaunchViewModel @Inject constructor(
     fun onAction(action: UiAction) {
         when (action) {
             UiAction.OnStartTap -> startPomodoro()
-            UiAction.OnEditTap -> _navEffect.trySend(NavigationEffect.Navigate(AddPomodoroTimer))
-            UiAction.OnBackTap -> _navEffect.trySend(NavigationEffect.GoBack)
+            UiAction.OnEditTap -> emitNav(NavigationEffect.Navigate(AddPomodoroTimer))
+            UiAction.OnBackTap -> emitNav(NavigationEffect.GoBack)
         }
     }
 
@@ -69,9 +69,7 @@ class PomodoroLaunchViewModel @Inject constructor(
         val queue = buildSessionQueue(state)
         pomodoroEngine.setSessionQueue(queue)
         pomodoroEngine.prepare()
-        viewModelScope.launch {
-            _navEffect.send(NavigationEffect.ReplaceCurrent(Pomodoro))
-        }
+        emitNav(NavigationEffect.ReplaceCurrent(Pomodoro))
     }
 
     private fun buildSessionQueue(state: UiState): List<Session> {
@@ -90,4 +88,7 @@ class PomodoroLaunchViewModel @Inject constructor(
         }
         return sessions
     }
+
+    private fun emitEffect(effect: UiEffect) = viewModelScope.launch { _uiEffect.send(effect) }
+    private fun emitNav(effect: NavigationEffect) = viewModelScope.launch { _navEffect.send(effect) }
 }

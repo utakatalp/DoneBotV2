@@ -53,7 +53,7 @@ class RegisterViewModel @Inject constructor(
             is UiAction.OnConfirmPasswordChange -> updateConfirmPassword(action.value)
             UiAction.OnPasswordVisibilityTap -> togglePasswordVisibility()
             UiAction.OnSignUpTap -> trySignUp()
-            UiAction.OnLoginTap -> _navEffect.trySend(NavigationEffect.Navigate(Login))
+            UiAction.OnLoginTap -> emitNav(NavigationEffect.Navigate(Login))
         }
     }
 
@@ -129,7 +129,7 @@ class RegisterViewModel @Inject constructor(
                     // account has nothing on the server, so we don't need fetchTasks() here.
                     syncPendingTasksUseCase()
                     _uiState.update { it.copy(isLoading = false, isRedirecting = true) }
-                    _navEffect.trySend(NavigationEffect.Navigate(Home))
+                    emitNav(NavigationEffect.Navigate(Home))
                 }
                 .onFailure { error ->
                     _uiState.update {
@@ -186,4 +186,7 @@ class RegisterViewModel @Inject constructor(
             else -> PasswordStrength.WEAK
         }
     }
+
+    private fun emitEffect(effect: UiEffect) = viewModelScope.launch { _uiEffect.send(effect) }
+    private fun emitNav(effect: NavigationEffect) = viewModelScope.launch { _navEffect.send(effect) }
 }

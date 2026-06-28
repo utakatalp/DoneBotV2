@@ -7,7 +7,6 @@ import android.content.pm.ServiceInfo
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.IBinder
-import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
@@ -38,6 +37,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 @AndroidEntryPoint
 class OverlayService :
@@ -65,7 +65,6 @@ class OverlayService :
 
     override fun onCreate() {
         super.onCreate()
-        Log.d(TAG, "[OverlayService] onCreate")
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         _savedStateRegistryController.performAttach()
         _savedStateRegistryController.performRestore(null)
@@ -76,7 +75,6 @@ class OverlayService :
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         val message = intent.getStringExtra(EXTRA_MESSAGE).orEmpty()
         val minutesBefore = intent.getLongExtra(EXTRA_MINUTES_BEFORE, 0L)
-        Log.d(TAG, "[OverlayService] onStartCommand message='$message' minutesBefore=$minutesBefore")
         promoteToForeground()
         showOverlay(message, minutesBefore)
         serviceScope.launch { ringtone.play(context = this@OverlayService) }
@@ -85,7 +83,6 @@ class OverlayService :
 
     private fun showOverlay(message: String, minutesBefore: Long) {
         if (overlayView != null) {
-            Log.d(TAG, "[OverlayService] showOverlay: already showing, ignoring")
             return
         }
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
@@ -112,7 +109,7 @@ class OverlayService :
                     var show by remember { mutableStateOf(true) }
                     LaunchedEffect(show) {
                         if (!show) {
-                            delay(HIDE_ANIMATION_DELAY_MS)
+                            delay(HIDE_ANIMATION_DELAY_MS.milliseconds)
                             hideOverlay()
                         }
                     }
@@ -130,11 +127,9 @@ class OverlayService :
             }
         }
         overlayView = view
-        Log.d(TAG, "[OverlayService] showOverlay: adding view to WindowManager")
         runCatching {
             windowManager.addView(view, layoutParams)
         }.onFailure {
-            Log.d(TAG, "[OverlayService] showOverlay: addView FAILED", it)
             overlayView = null
             stopSelf()
         }
@@ -147,12 +142,7 @@ class OverlayService :
         }
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
         ringtone.stop()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            stopForeground(STOP_FOREGROUND_REMOVE)
-        } else {
-            @Suppress("DEPRECATION")
-            stopForeground(true)
-        }
+        stopForeground(STOP_FOREGROUND_REMOVE)
         startedAsForeground = false
         stopSelf()
     }
@@ -180,8 +170,7 @@ class OverlayService :
                 startForeground(OverlayServiceChannel.FOREGROUND_NOTIFICATION_ID, notification)
             }
             startedAsForeground = true
-            Log.d(TAG, "[OverlayService] promoteToForeground: success")
-        }.onFailure { Log.d(TAG, "[OverlayService] promoteToForeground: FAILED", it) }
+        }
     }
 
     private fun openApp() {
@@ -192,7 +181,6 @@ class OverlayService :
     }
 
     override fun onDestroy() {
-        Log.d(TAG, "[OverlayService] onDestroy")
         serviceScope.cancel()
         ringtone.stop()
         super.onDestroy()
@@ -202,6 +190,5 @@ class OverlayService :
         const val EXTRA_MESSAGE = "extra_message"
         const val EXTRA_MINUTES_BEFORE = "extra_minutes_before"
         private const val HIDE_ANIMATION_DELAY_MS = 300L
-        private const val TAG = "AlarmFlow"
     }
 }

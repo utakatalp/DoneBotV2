@@ -1,7 +1,6 @@
 package com.utakatalp.donebot.data.sync
 
 import android.content.Context
-import android.util.Log
 import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
@@ -20,7 +19,6 @@ class SyncPendingTasksUseCaseImpl @Inject constructor(
     private val workManager = WorkManager.getInstance(context)
 
     override operator fun invoke() {
-        Log.d(TAG, "[SyncPendingTasksUseCase] enqueue SyncWorker (unique=$SYNC_WORK policy=REPLACE)")
         val request = OneTimeWorkRequestBuilder<SyncWorker>()
             .setConstraints(networkConstraints())
             .build()
@@ -33,6 +31,5 @@ class SyncPendingTasksUseCaseImpl @Inject constructor(
 
     private companion object {
         const val SYNC_WORK = "donebot_sync_work"
-        const val TAG = "SyncFlow"
     }
 }

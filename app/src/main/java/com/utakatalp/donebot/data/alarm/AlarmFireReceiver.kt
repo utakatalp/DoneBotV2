@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
-import android.util.Log
 import androidx.core.content.ContextCompat
 import com.utakatalp.donebot.data.notification.NotificationService
 import com.utakatalp.donebot.data.overlay.OverlayService
@@ -33,11 +32,6 @@ class AlarmFireReceiver : BroadcastReceiver() {
         // target the scheduler picked.
         val message = intent.getStringExtra(OverlayService.EXTRA_MESSAGE).orEmpty()
         val minutesBefore = intent.getLongExtra(OverlayService.EXTRA_MINUTES_BEFORE, 0L)
-        Log.d(
-            TAG,
-            "[AlarmFireReceiver] alarm FIRED requested=$requestedTarget effective=$effectiveTarget " +
-                "message='$message' minutesBefore=$minutesBefore",
-        )
 
         val serviceIntent = when (effectiveTarget) {
             FIRE_TARGET_OVERLAY -> Intent(context, OverlayService::class.java).apply {
@@ -49,16 +43,13 @@ class AlarmFireReceiver : BroadcastReceiver() {
                 putExtra(NotificationService.EXTRA_MINUTES_BEFORE, minutesBefore)
             }
             else -> {
-                Log.w(TAG, "Unknown fire target=$requestedTarget; dropping alarm")
                 return
             }
         }
 
-        Log.d(TAG, "[AlarmFireReceiver] starting service for target=$effectiveTarget")
         runCatching {
             ContextCompat.startForegroundService(context, serviceIntent)
         }.onFailure {
-            Log.d(TAG, "[AlarmFireReceiver] startForegroundService FAILED for target=$effectiveTarget", it)
         }
     }
 
@@ -67,6 +58,5 @@ class AlarmFireReceiver : BroadcastReceiver() {
         const val EXTRA_FIRE_TARGET = "com.utakatalp.donebot.alarm.extra.FIRE_TARGET"
         const val FIRE_TARGET_OVERLAY = "OVERLAY"
         const val FIRE_TARGET_NOTIFICATION = "NOTIFICATION"
-        private const val TAG = "AlarmFlow"
     }
 }

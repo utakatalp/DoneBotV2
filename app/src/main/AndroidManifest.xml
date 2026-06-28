@@ -12,9 +12,11 @@
     <!-- USE_EXACT_ALARM (API 33+) is install-time and auto-granted for apps whose core
          function is alarms/reminders — that's us. canScheduleExactAlarms() returns true
          once this is declared, so setExactAndAllowWhileIdle works without user action. -->
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM"
+        tools:ignore="ExactAlarmPolicy" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"
+        tools:ignore="ForegroundServicesPolicy" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
@@ -31,7 +33,6 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.DoneBot"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>

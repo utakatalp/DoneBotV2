@@ -9,7 +9,6 @@ import android.media.ToneGenerator
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 
 class RingtoneHolder {
     private var ringtone: Ringtone? = null
@@ -27,7 +26,6 @@ class RingtoneHolder {
 
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
         if (audioManager?.ringerMode != AudioManager.RINGER_MODE_NORMAL) {
-            Log.d(TAG, "Ringer mode != NORMAL; suppressing alarm sound")
             return
         }
 
@@ -70,6 +68,5 @@ class RingtoneHolder {
         const val AUTO_STOP_MILLIS = 2_000L
         const val FALLBACK_TONE_MILLIS = 800
         const val TONE_VOLUME = 100
-        const val TAG = "RingtoneHolder"
     }
 }

@@ -97,7 +97,7 @@ class AddPomodoroTimerViewModel @Inject constructor(
             }
 
             UiAction.OnSaveTap -> save()
-            UiAction.OnBackTap -> _navEffect.trySend(NavigationEffect.GoBack)
+            UiAction.OnBackTap -> emitNav(NavigationEffect.GoBack)
         }
     }
 
@@ -114,9 +114,12 @@ class AddPomodoroTimerViewModel @Inject constructor(
                 ),
             )
         }
-            .onSuccess { _navEffect.trySend(NavigationEffect.GoBack) }
+            .onSuccess { emitNav(NavigationEffect.GoBack) }
             .onFailure { error ->
-                _uiEffect.trySend(UiEffect.ShowError(error.message ?: "Failed to save settings"))
+                emitEffect(UiEffect.ShowError(error.message ?: "Failed to save settings"))
             }
     }
+
+    private fun emitEffect(effect: UiEffect) = viewModelScope.launch { _uiEffect.send(effect) }
+    private fun emitNav(effect: NavigationEffect) = viewModelScope.launch { _navEffect.send(effect) }
 }
