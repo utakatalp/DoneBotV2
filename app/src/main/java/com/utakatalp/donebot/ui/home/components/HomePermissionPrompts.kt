@@ -1,4 +1,4 @@
-package com.utakatalp.donebot.ui.home
+package com.utakatalp.donebot.ui.home.components
 
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
@@ -12,9 +12,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.utakatalp.donebot.common.NotificationPermissionPrompt
+import com.utakatalp.donebot.common.OverlayPermissionPrompt
 import com.utakatalp.donebot.ui.home.HomeContract.UiAction
-import com.utakatalp.donebot.ui.permissions.NotificationPermissionPrompt
-import com.utakatalp.donebot.ui.permissions.OverlayPermissionPrompt
+import com.utakatalp.donebot.ui.home.PermissionType
 
 @Composable
 internal fun HomePermissionPrompts(

@@ -6,17 +6,19 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import com.utakatalp.donebot.domain.model.Pomodoro
 import com.utakatalp.donebot.domain.repository.PomodoroSettingsRepository
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class PomodoroSettingsRepositoryImpl @Inject constructor(
     private val dataStore: DataStore<Preferences>,
 ) : PomodoroSettingsRepository {
 
-    override suspend fun getSettings(): Pomodoro? {
-        val prefs = dataStore.data.first()
-        val focus = prefs[FOCUS_TIME] ?: return null
-        return Pomodoro(
+    override fun getSettings(): Flow<Pomodoro?> = dataStore.data.map { prefs ->
+        val focus = prefs[FOCUS_TIME] ?: return@map null
+        Pomodoro(
             focusTime = focus,
             shortBreak = prefs[SHORT_BREAK] ?: 0,
             longBreak = prefs[LONG_BREAK] ?: 0,

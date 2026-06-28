@@ -7,7 +7,7 @@ import android.provider.Settings
 import android.util.Log
 import androidx.core.content.ContextCompat
 import com.utakatalp.donebot.data.notification.NotificationService
-import com.utakatalp.donebot.ui.overlay.OverlayService
+import com.utakatalp.donebot.data.overlay.OverlayService
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

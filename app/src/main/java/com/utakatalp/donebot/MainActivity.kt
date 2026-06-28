@@ -8,8 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.utakatalp.donebot.navigation.AuthNavHost
-import com.utakatalp.donebot.navigation.MainNavHost
+import com.utakatalp.donebot.navigation.auth.AuthNavHost
+import com.utakatalp.donebot.navigation.main.MainNavHost
 import com.utakatalp.donebot.ui.splash.SplashContract.UiAction
 import com.utakatalp.donebot.ui.splash.SplashContract.UiState
 import com.utakatalp.donebot.ui.splash.SplashScreen

@@ -1,4 +1,4 @@
-package com.utakatalp.donebot.ui.home
+package com.utakatalp.donebot.ui.home.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable

@@ -1,4 +1,4 @@
-package com.utakatalp.donebot.ui.pomodorolaunch
+package com.utakatalp.donebot.ui.pomodoro.launch
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,14 +9,16 @@ import com.utakatalp.donebot.domain.repository.PomodoroSettingsRepository
 import com.utakatalp.donebot.navigation.AddPomodoroTimer
 import com.utakatalp.donebot.navigation.NavigationEffect
 import com.utakatalp.donebot.navigation.Pomodoro
-import com.utakatalp.donebot.ui.pomodorolaunch.PomodoroLaunchContract.UiAction
-import com.utakatalp.donebot.ui.pomodorolaunch.PomodoroLaunchContract.UiEffect
-import com.utakatalp.donebot.ui.pomodorolaunch.PomodoroLaunchContract.UiState
+import com.utakatalp.donebot.ui.pomodoro.launch.PomodoroLaunchContract.UiAction
+import com.utakatalp.donebot.ui.pomodoro.launch.PomodoroLaunchContract.UiEffect
+import com.utakatalp.donebot.ui.pomodoro.launch.PomodoroLaunchContract.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -38,7 +40,20 @@ class PomodoroLaunchViewModel @Inject constructor(
     val navEffect = _navEffect.receiveAsFlow()
 
     init {
-        loadSettings()
+        pomodoroSettings.getSettings()
+            .onEach { saved ->
+                _uiState.update {
+                    if (saved == null) it.copy(isLoading = false) else it.copy(
+                        focusMinutes = saved.focusTime,
+                        shortBreakMinutes = saved.shortBreak,
+                        longBreakMinutes = saved.longBreak,
+                        sessionCount = saved.sessionCount,
+                        sectionCount = saved.sectionCount,
+                        isLoading = false,
+                    )
+                }
+            }
+            .launchIn(viewModelScope)
     }
 
     fun onAction(action: UiAction) {
@@ -49,27 +64,13 @@ class PomodoroLaunchViewModel @Inject constructor(
         }
     }
 
-    private fun loadSettings() = viewModelScope.launch {
-        val saved = pomodoroSettings.getSettings()
-        _uiState.update {
-            if (saved == null) it.copy(isLoading = false) else it.copy(
-                focusMinutes = saved.focusTime,
-                shortBreakMinutes = saved.shortBreak,
-                longBreakMinutes = saved.longBreak,
-                sessionCount = saved.sessionCount,
-                sectionCount = saved.sectionCount,
-                isLoading = false,
-            )
-        }
-    }
-
     private fun startPomodoro() {
         val state = _uiState.value
         val queue = buildSessionQueue(state)
         pomodoroEngine.setSessionQueue(queue)
         pomodoroEngine.prepare()
         viewModelScope.launch {
-            _navEffect.send(NavigationEffect.Navigate(Pomodoro))
+            _navEffect.send(NavigationEffect.ReplaceCurrent(Pomodoro))
         }
     }
 

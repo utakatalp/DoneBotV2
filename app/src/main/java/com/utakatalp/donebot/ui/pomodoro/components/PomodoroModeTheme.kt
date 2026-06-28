@@ -1,4 +1,4 @@
-package com.utakatalp.donebot.ui.pomodoro
+package com.utakatalp.donebot.ui.pomodoro.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Coffee

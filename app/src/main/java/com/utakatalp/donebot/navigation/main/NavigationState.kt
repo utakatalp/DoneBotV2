@@ -1,4 +1,4 @@
-package com.utakatalp.donebot.navigation
+package com.utakatalp.donebot.navigation.main
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -12,6 +12,8 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberDecoratedNavEntries
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import com.utakatalp.donebot.navigation.Home
+import com.utakatalp.donebot.navigation.Profile
 
 /** Top-level routes shown in the bottom bar. */
 val TOP_LEVEL_ROUTES: Set<NavKey> = setOf(Home, Profile)

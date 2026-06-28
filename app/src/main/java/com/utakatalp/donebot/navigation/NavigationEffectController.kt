@@ -9,10 +9,12 @@ fun NavigationEffectController(
     navEffect: Flow<NavigationEffect>,
     onNavigate: (AppKey) -> Unit,
     onBack: () -> Unit = {},
+    onReplaceCurrent: (AppKey) -> Unit = onNavigate,
 ) {
     navEffect.collectWithLifecycle { effect ->
         when (effect) {
             is NavigationEffect.Navigate -> onNavigate(effect.key)
+            is NavigationEffect.ReplaceCurrent -> onReplaceCurrent(effect.key)
             NavigationEffect.GoBack -> onBack()
         }
     }

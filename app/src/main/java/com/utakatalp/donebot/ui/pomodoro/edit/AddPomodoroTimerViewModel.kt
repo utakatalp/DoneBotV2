@@ -1,18 +1,19 @@
-package com.utakatalp.donebot.ui.addpomodorotimer
+package com.utakatalp.donebot.ui.pomodoro.edit
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.utakatalp.donebot.domain.model.Pomodoro
 import com.utakatalp.donebot.domain.repository.PomodoroSettingsRepository
 import com.utakatalp.donebot.navigation.NavigationEffect
-import com.utakatalp.donebot.ui.addpomodorotimer.AddPomodoroTimerContract.UiAction
-import com.utakatalp.donebot.ui.addpomodorotimer.AddPomodoroTimerContract.UiEffect
-import com.utakatalp.donebot.ui.addpomodorotimer.AddPomodoroTimerContract.UiState
+import com.utakatalp.donebot.ui.pomodoro.edit.AddPomodoroTimerContract.UiAction
+import com.utakatalp.donebot.ui.pomodoro.edit.AddPomodoroTimerContract.UiEffect
+import com.utakatalp.donebot.ui.pomodoro.edit.AddPomodoroTimerContract.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -34,7 +35,7 @@ class AddPomodoroTimerViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            pomodoroSettings.getSettings()?.let { saved ->
+            pomodoroSettings.getSettings().first()?.let { saved ->
                 _uiState.update {
                     it.copy(
                         focusMinutes = saved.focusTime,
@@ -51,35 +52,50 @@ class AddPomodoroTimerViewModel @Inject constructor(
     fun onAction(action: UiAction) {
         when (action) {
             is UiAction.OnFocusChange -> _uiState.update {
-                it.copy(focusMinutes = action.value.coerceIn(
-                    AddPomodoroTimerContract.FOCUS_MIN,
-                    AddPomodoroTimerContract.FOCUS_MAX,
-                ))
+                it.copy(
+                    focusMinutes = action.value.coerceIn(
+                        AddPomodoroTimerContract.FOCUS_MIN,
+                        AddPomodoroTimerContract.FOCUS_MAX,
+                    )
+                )
             }
+
             is UiAction.OnShortBreakChange -> _uiState.update {
-                it.copy(shortBreakMinutes = action.value.coerceIn(
-                    AddPomodoroTimerContract.SHORT_BREAK_MIN,
-                    AddPomodoroTimerContract.SHORT_BREAK_MAX,
-                ))
+                it.copy(
+                    shortBreakMinutes = action.value.coerceIn(
+                        AddPomodoroTimerContract.SHORT_BREAK_MIN,
+                        AddPomodoroTimerContract.SHORT_BREAK_MAX,
+                    )
+                )
             }
+
             is UiAction.OnLongBreakChange -> _uiState.update {
-                it.copy(longBreakMinutes = action.value.coerceIn(
-                    AddPomodoroTimerContract.LONG_BREAK_MIN,
-                    AddPomodoroTimerContract.LONG_BREAK_MAX,
-                ))
+                it.copy(
+                    longBreakMinutes = action.value.coerceIn(
+                        AddPomodoroTimerContract.LONG_BREAK_MIN,
+                        AddPomodoroTimerContract.LONG_BREAK_MAX,
+                    )
+                )
             }
+
             is UiAction.OnSessionCountChange -> _uiState.update {
-                it.copy(sessionCount = action.value.coerceIn(
-                    AddPomodoroTimerContract.SESSION_COUNT_MIN,
-                    AddPomodoroTimerContract.SESSION_COUNT_MAX,
-                ))
+                it.copy(
+                    sessionCount = action.value.coerceIn(
+                        AddPomodoroTimerContract.SESSION_COUNT_MIN,
+                        AddPomodoroTimerContract.SESSION_COUNT_MAX,
+                    )
+                )
             }
+
             is UiAction.OnSectionCountChange -> _uiState.update {
-                it.copy(sectionCount = action.value.coerceIn(
-                    AddPomodoroTimerContract.SECTION_COUNT_MIN,
-                    AddPomodoroTimerContract.SECTION_COUNT_MAX,
-                ))
+                it.copy(
+                    sectionCount = action.value.coerceIn(
+                        AddPomodoroTimerContract.SECTION_COUNT_MIN,
+                        AddPomodoroTimerContract.SECTION_COUNT_MAX,
+                    )
+                )
             }
+
             UiAction.OnSaveTap -> save()
             UiAction.OnBackTap -> _navEffect.trySend(NavigationEffect.GoBack)
         }
@@ -87,7 +103,6 @@ class AddPomodoroTimerViewModel @Inject constructor(
 
     private fun save() = viewModelScope.launch {
         val state = _uiState.value
-        _uiState.update { it.copy(isSaving = true) }
         runCatching {
             pomodoroSettings.saveSettings(
                 Pomodoro(
@@ -101,7 +116,6 @@ class AddPomodoroTimerViewModel @Inject constructor(
         }
             .onSuccess { _navEffect.trySend(NavigationEffect.GoBack) }
             .onFailure { error ->
-                _uiState.update { it.copy(isSaving = false) }
                 _uiEffect.trySend(UiEffect.ShowError(error.message ?: "Failed to save settings"))
             }
     }

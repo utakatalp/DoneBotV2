@@ -1,4 +1,4 @@
-package com.utakatalp.donebot.ui.overlay
+package com.utakatalp.donebot.data.overlay
 
 import android.app.Notification
 import android.app.Service

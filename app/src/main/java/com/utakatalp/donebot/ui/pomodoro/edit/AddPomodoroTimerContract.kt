@@ -1,4 +1,4 @@
-package com.utakatalp.donebot.ui.addpomodorotimer
+package com.utakatalp.donebot.ui.pomodoro.edit
 
 import androidx.compose.runtime.Immutable
 
@@ -11,7 +11,6 @@ object AddPomodoroTimerContract {
         val longBreakMinutes: Int = DEFAULT_LONG_BREAK_MINUTES,
         val sessionCount: Int = DEFAULT_SESSION_COUNT,
         val sectionCount: Int = DEFAULT_SECTION_COUNT,
-        val isSaving: Boolean = false,
     )
 
     sealed interface UiAction {

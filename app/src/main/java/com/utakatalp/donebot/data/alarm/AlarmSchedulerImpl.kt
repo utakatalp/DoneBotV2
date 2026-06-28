@@ -10,7 +10,7 @@ import android.util.Log
 import com.utakatalp.donebot.data.notification.NotificationService
 import com.utakatalp.donebot.domain.alarm.AlarmScheduler
 import com.utakatalp.donebot.domain.model.AlarmItem
-import com.utakatalp.donebot.ui.overlay.OverlayService
+import com.utakatalp.donebot.data.overlay.OverlayService
 import java.time.ZoneId
 
 class AlarmSchedulerImpl(

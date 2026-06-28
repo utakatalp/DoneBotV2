@@ -1,4 +1,4 @@
-package com.utakatalp.donebot.ui.addpomodorotimer
+package com.utakatalp.donebot.ui.pomodoro.edit
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -35,9 +35,9 @@ import com.todoapp.uikit.components.TDText
 import com.todoapp.uikit.previews.TDPreview
 import com.todoapp.uikit.theme.TDTheme
 import com.utakatalp.donebot.R
-import com.utakatalp.donebot.ui.addpomodorotimer.AddPomodoroTimerContract.UiAction
-import com.utakatalp.donebot.ui.addpomodorotimer.AddPomodoroTimerContract.UiEffect
-import com.utakatalp.donebot.ui.addpomodorotimer.AddPomodoroTimerContract.UiState
+import com.utakatalp.donebot.ui.pomodoro.edit.AddPomodoroTimerContract.UiAction
+import com.utakatalp.donebot.ui.pomodoro.edit.AddPomodoroTimerContract.UiEffect
+import com.utakatalp.donebot.ui.pomodoro.edit.AddPomodoroTimerContract.UiState
 import com.utakatalp.donebot.ui.theme.DoneBotTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -140,7 +140,6 @@ fun AddPomodoroTimerScreen(
                 onClick = { onAction(UiAction.OnSaveTap) },
                 type = TDButtonType.PRIMARY,
                 fullWidth = true,
-                isEnable = !uiState.isSaving,
             )
         }
     }

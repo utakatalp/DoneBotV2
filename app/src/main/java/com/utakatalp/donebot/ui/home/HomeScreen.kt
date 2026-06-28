@@ -23,6 +23,7 @@ import com.utakatalp.donebot.domain.model.Task
 import com.utakatalp.donebot.ui.home.HomeContract.UiAction
 import com.utakatalp.donebot.ui.home.HomeContract.UiEffect
 import com.utakatalp.donebot.ui.home.HomeContract.UiState
+import com.utakatalp.donebot.ui.home.components.HomeContent
 import com.utakatalp.donebot.ui.theme.DoneBotTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow

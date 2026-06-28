@@ -1,4 +1,4 @@
-package com.utakatalp.donebot.ui.pomodorolaunch
+package com.utakatalp.donebot.ui.pomodoro.launch
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -31,9 +31,9 @@ import com.todoapp.uikit.components.TDText
 import com.todoapp.uikit.previews.TDPreview
 import com.todoapp.uikit.theme.TDTheme
 import com.utakatalp.donebot.R
-import com.utakatalp.donebot.ui.pomodorolaunch.PomodoroLaunchContract.UiAction
-import com.utakatalp.donebot.ui.pomodorolaunch.PomodoroLaunchContract.UiEffect
-import com.utakatalp.donebot.ui.pomodorolaunch.PomodoroLaunchContract.UiState
+import com.utakatalp.donebot.ui.pomodoro.launch.PomodoroLaunchContract.UiAction
+import com.utakatalp.donebot.ui.pomodoro.launch.PomodoroLaunchContract.UiEffect
+import com.utakatalp.donebot.ui.pomodoro.launch.PomodoroLaunchContract.UiState
 import com.utakatalp.donebot.ui.theme.DoneBotTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow

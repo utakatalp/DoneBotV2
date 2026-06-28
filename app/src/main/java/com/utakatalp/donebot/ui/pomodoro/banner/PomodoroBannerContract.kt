@@ -1,4 +1,4 @@
-package com.utakatalp.donebot.ui.pomodoro
+package com.utakatalp.donebot.ui.pomodoro.banner
 
 import androidx.compose.runtime.Immutable
 import com.utakatalp.donebot.domain.engine.PomodoroMode

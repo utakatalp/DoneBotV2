@@ -1,4 +1,4 @@
-package com.utakatalp.donebot.ui.pomodorolaunch
+package com.utakatalp.donebot.ui.pomodoro.launch
 
 import androidx.compose.runtime.Immutable
 

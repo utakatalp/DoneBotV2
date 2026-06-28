@@ -1,12 +1,12 @@
-package com.utakatalp.donebot.ui.pomodoro
+package com.utakatalp.donebot.ui.pomodoro.banner
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.utakatalp.donebot.domain.engine.PomodoroEngine
 import com.utakatalp.donebot.navigation.NavigationEffect
 import com.utakatalp.donebot.navigation.Pomodoro
-import com.utakatalp.donebot.ui.pomodoro.PomodoroBannerContract.UiAction
-import com.utakatalp.donebot.ui.pomodoro.PomodoroBannerContract.UiState
+import com.utakatalp.donebot.ui.pomodoro.banner.PomodoroBannerContract.UiAction
+import com.utakatalp.donebot.ui.pomodoro.banner.PomodoroBannerContract.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.SharingStarted

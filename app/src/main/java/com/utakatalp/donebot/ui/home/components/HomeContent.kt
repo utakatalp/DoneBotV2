@@ -1,4 +1,4 @@
-package com.utakatalp.donebot.ui.home
+package com.utakatalp.donebot.ui.home.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +29,7 @@ import com.todoapp.uikit.previews.TDPreview
 import com.utakatalp.donebot.R
 import com.utakatalp.donebot.ui.home.HomeContract.UiAction
 import com.utakatalp.donebot.ui.home.HomeContract.UiState
+import com.utakatalp.donebot.ui.home.previewSampleTasks
 import com.utakatalp.donebot.ui.theme.DoneBotTheme
 import java.time.LocalDate
 

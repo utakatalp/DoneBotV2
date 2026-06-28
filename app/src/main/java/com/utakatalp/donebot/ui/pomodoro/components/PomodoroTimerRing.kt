@@ -1,4 +1,4 @@
-package com.utakatalp.donebot.ui.pomodoro
+package com.utakatalp.donebot.ui.pomodoro.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween

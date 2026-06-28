@@ -1,4 +1,4 @@
-package com.utakatalp.donebot.ui.permissions
+package com.utakatalp.donebot.common
 
 import android.Manifest
 import android.app.Activity

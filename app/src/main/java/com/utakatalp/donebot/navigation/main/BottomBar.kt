@@ -1,4 +1,4 @@
-package com.utakatalp.donebot.navigation
+package com.utakatalp.donebot.navigation.main
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -9,6 +9,9 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.navigation3.runtime.NavKey
+import com.utakatalp.donebot.navigation.AppKey
+import com.utakatalp.donebot.navigation.Home as HomeRoute
+import com.utakatalp.donebot.navigation.Profile as ProfileRoute
 
 private data class BottomBarTab(
     val key: AppKey,
@@ -17,8 +20,8 @@ private data class BottomBarTab(
 )
 
 private val TABS = listOf(
-    BottomBarTab(Home, "Home") { Icon(Icons.Default.Home, contentDescription = "Home") },
-    BottomBarTab(Profile, "Profile") { Icon(Icons.Default.Person, contentDescription = "Profile") },
+    BottomBarTab(HomeRoute, "Home") { Icon(Icons.Default.Home, contentDescription = "Home") },
+    BottomBarTab(ProfileRoute, "Profile") { Icon(Icons.Default.Person, contentDescription = "Profile") },
 )
 
 @Composable

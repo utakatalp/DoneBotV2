@@ -1,4 +1,4 @@
-package com.utakatalp.donebot.ui.pomodoro
+package com.utakatalp.donebot.ui.pomodoro.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
