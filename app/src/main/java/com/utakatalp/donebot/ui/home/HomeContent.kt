@@ -45,6 +45,10 @@ internal fun HomeContent(
             onRefresh = { onAction(UiAction.OnRefresh) },
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
+                HomePermissionPrompts(
+                    permissions = uiState.visiblePermissionPrompts,
+                    onAction = onAction,
+                )
                 TDMonthlyDatePicker(
                     modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
                     displayedMonth = uiState.displayedMonth,

@@ -19,6 +19,7 @@ object HomeContract {
             val pendingDeleteTask: Task? = null,
             val isDeleteDialogOpen: Boolean = false,
             val isRefreshing: Boolean = false,
+            val visiblePermissionPrompts: List<PermissionType> = emptyList(),
         ) : UiState
 
         data class Error(val message: String) : UiState
@@ -38,6 +39,9 @@ object HomeContract {
         data object OnUndoDelete : UiAction
         data object OnRetry : UiAction
         data object OnRefresh : UiAction
+        data object RecheckPermissions : UiAction
+        data class PermissionGranted(val type: PermissionType) : UiAction
+        data class DismissPermission(val type: PermissionType) : UiAction
     }
 
     sealed interface UiEffect {

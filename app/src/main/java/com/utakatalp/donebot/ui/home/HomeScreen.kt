@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.todoapp.uikit.previews.TDPreview
 import com.utakatalp.donebot.R
 import com.utakatalp.donebot.domain.model.Task
@@ -43,6 +44,10 @@ fun HomeScreen(
                 is UiEffect.ShowError -> Toast.makeText(context, effect.message, Toast.LENGTH_LONG).show()
             }
         }
+    }
+    LifecycleResumeEffect(Unit) {
+        onAction(UiAction.RecheckPermissions)
+        onPauseOrDispose { }
     }
 
     Box(

@@ -1,11 +1,16 @@
 package com.utakatalp.donebot.ui.home
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.utakatalp.donebot.common.needsOverlayPermission
+import com.utakatalp.donebot.common.needsPostNotificationsPermission
 import com.utakatalp.donebot.domain.engine.PomodoroEngine
 import com.utakatalp.donebot.domain.model.Task
 import com.utakatalp.donebot.domain.repository.TaskRepository
 import com.utakatalp.donebot.domain.repository.TaskSyncRepository
+import com.utakatalp.donebot.domain.usecase.DeleteTaskUseCase
+import com.utakatalp.donebot.domain.usecase.UpdateTaskUseCase
 import com.utakatalp.donebot.navigation.AddTask
 import com.utakatalp.donebot.navigation.Details
 import com.utakatalp.donebot.navigation.NavigationEffect
@@ -15,6 +20,7 @@ import com.utakatalp.donebot.ui.home.HomeContract.UiAction
 import com.utakatalp.donebot.ui.home.HomeContract.UiEffect
 import com.utakatalp.donebot.ui.home.HomeContract.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,9 +39,12 @@ private const val REFRESH_INDICATOR_MIN_MS = 1500L
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    @ApplicationContext private val appContext: Context,
     private val taskRepository: TaskRepository,
     private val taskSyncRepository: TaskSyncRepository,
     private val pomodoroEngine: PomodoroEngine,
+    private val updateTaskUseCase: UpdateTaskUseCase,
+    private val deleteTaskUseCase: DeleteTaskUseCase,
 ) : ViewModel() {
 
     private val _selectedDate = MutableStateFlow(LocalDate.now())
@@ -43,23 +52,25 @@ class HomeViewModel @Inject constructor(
     private val _pendingDeleteTask = MutableStateFlow<Task?>(null)
     private val _isDeleteDialogOpen = MutableStateFlow(false)
     private val _isRefreshing = MutableStateFlow(false)
+    private val _neededPermissions = MutableStateFlow(currentNeededPermissions())
+    private val _dismissedPermissions = MutableStateFlow<Set<PermissionType>>(emptySet())
 
     val uiState: StateFlow<UiState> = combine(
         _selectedDate,
         _displayedMonth,
         taskRepository.getTasks(),
         _pendingDeleteTask,
-        combine(_isDeleteDialogOpen, _isRefreshing, ::Pair),
+        combine(_isDeleteDialogOpen, _isRefreshing, _neededPermissions, _dismissedPermissions, ::Quad),
     ) { date, month, allTasks, pendingDelete, flags ->
-        val (dialogOpen, refreshing) = flags
         UiState.Success(
             selectedDate = date,
             displayedMonth = month,
             tasks = allTasks.filter { it.date == date },
             taskDates = allTasks.map { it.date }.toSet(),
             pendingDeleteTask = pendingDelete,
-            isDeleteDialogOpen = dialogOpen,
-            isRefreshing = refreshing,
+            isDeleteDialogOpen = flags.dialogOpen,
+            isRefreshing = flags.refreshing,
+            visiblePermissionPrompts = (flags.needed - flags.dismissed).toList(),
         ) as UiState
     }
         .catch { error -> emit(UiState.Error(error.message ?: "Failed to load tasks")) }
@@ -93,7 +104,20 @@ class HomeViewModel @Inject constructor(
             UiAction.OnUndoDelete -> Unit
             UiAction.OnRetry -> Unit
             UiAction.OnRefresh -> refresh()
+            UiAction.RecheckPermissions -> _neededPermissions.value = currentNeededPermissions()
+            is UiAction.PermissionGranted -> {
+                _dismissedPermissions.value = _dismissedPermissions.value - action.type
+                _neededPermissions.value = currentNeededPermissions()
+            }
+            is UiAction.DismissPermission -> {
+                _dismissedPermissions.value = _dismissedPermissions.value + action.type
+            }
         }
+    }
+
+    private fun currentNeededPermissions(): Set<PermissionType> = buildSet {
+        if (appContext.needsOverlayPermission()) add(PermissionType.OVERLAY)
+        if (appContext.needsPostNotificationsPermission()) add(PermissionType.NOTIFICATION)
     }
 
     private fun refresh() {
@@ -106,7 +130,7 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun toggleCompletion(task: Task) = viewModelScope.launch {
-        taskRepository.updateTask(task.copy(isCompleted = !task.isCompleted))
+        updateTaskUseCase(task.copy(isCompleted = !task.isCompleted))
             .onFailure { emitError(it) }
     }
 
@@ -124,11 +148,18 @@ class HomeViewModel @Inject constructor(
         val target = _pendingDeleteTask.value ?: return@launch
         _pendingDeleteTask.value = null
         _isDeleteDialogOpen.value = false
-        taskRepository.deleteTask(target.id)
+        deleteTaskUseCase(target.id)
             .onFailure { emitError(it) }
     }
 
     private fun emitError(error: Throwable) {
         _uiEffect.trySend(UiEffect.ShowError(error.message ?: "Something went wrong"))
     }
+
+    private data class Quad(
+        val dialogOpen: Boolean,
+        val refreshing: Boolean,
+        val needed: Set<PermissionType>,
+        val dismissed: Set<PermissionType>,
+    )
 }

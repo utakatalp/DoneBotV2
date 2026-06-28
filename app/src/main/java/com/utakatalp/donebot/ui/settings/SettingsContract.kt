@@ -1,15 +1,15 @@
 package com.utakatalp.donebot.ui.settings
 
+import androidx.compose.runtime.Immutable
+
 object SettingsContract {
-    data class State(
-        val isLoading: Boolean = false
+
+    @Immutable
+    data class UiState(
+        val leadMinutes: Int = 5,
     )
 
-    sealed interface Event {
-        object BackClicked : Event
-    }
-
-    sealed interface Effect {
-        object NavigateBack : Effect
+    sealed interface UiAction {
+        data class OnLeadMinutesSelected(val value: Int) : UiAction
     }
 }

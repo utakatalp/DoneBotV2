@@ -3,7 +3,7 @@ package com.utakatalp.donebot.ui.addtask
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.utakatalp.donebot.domain.model.Task
-import com.utakatalp.donebot.domain.repository.TaskRepository
+import com.utakatalp.donebot.domain.usecase.AddTaskUseCase
 import com.utakatalp.donebot.navigation.NavigationEffect
 import com.utakatalp.donebot.ui.addtask.AddTaskContract.AddTaskError
 import com.utakatalp.donebot.ui.addtask.AddTaskContract.UiAction
@@ -23,7 +23,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddTaskViewModel @Inject constructor(
-    private val taskRepository: TaskRepository,
+    private val addTaskUseCase: AddTaskUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(UiState())
@@ -109,7 +109,7 @@ class AddTaskViewModel @Inject constructor(
     private fun addTask() = viewModelScope.launch {
         val state = _uiState.value
         _uiState.update { it.copy(isSaving = true) }
-        taskRepository.addTask(state.toNewTask())
+        addTaskUseCase(state.toNewTask())
             .onSuccess { _navEffect.trySend(NavigationEffect.GoBack) }
             .onFailure { onAddTaskFailure(it) }
     }

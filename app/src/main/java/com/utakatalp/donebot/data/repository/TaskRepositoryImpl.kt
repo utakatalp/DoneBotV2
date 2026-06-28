@@ -5,7 +5,6 @@ import com.utakatalp.donebot.data.mapper.toDomain
 import com.utakatalp.donebot.data.mapper.toEntity
 import com.utakatalp.donebot.data.model.entity.SyncStatus
 import com.utakatalp.donebot.data.model.entity.TaskEntity
-import com.utakatalp.donebot.data.model.network.data.TaskData
 import com.utakatalp.donebot.data.source.local.datasource.TaskLocalDataSource
 import com.utakatalp.donebot.data.source.remote.datasource.TaskRemoteDataSource
 import com.utakatalp.donebot.di.ApplicationScope

@@ -6,8 +6,12 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.work.Configuration
+import com.utakatalp.donebot.di.ApplicationScope
 import com.utakatalp.donebot.domain.repository.TaskSyncRepository
+import com.utakatalp.donebot.domain.usecase.RescheduleAllAlarmsUseCase
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltAndroidApp
@@ -18,6 +22,13 @@ class DoneBotApplication : Application(), Configuration.Provider, DefaultLifecyc
 
     @Inject
     lateinit var taskSyncRepository: TaskSyncRepository
+
+    @Inject
+    lateinit var rescheduleAllAlarmsUseCase: RescheduleAllAlarmsUseCase
+
+    @Inject
+    @ApplicationScope
+    lateinit var applicationScope: CoroutineScope
 
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
@@ -32,5 +43,6 @@ class DoneBotApplication : Application(), Configuration.Provider, DefaultLifecyc
     override fun onStart(owner: LifecycleOwner) {
         super.onStart(owner)
         taskSyncRepository.fetchTasks()
+        applicationScope.launch { rescheduleAllAlarmsUseCase() }
     }
 }

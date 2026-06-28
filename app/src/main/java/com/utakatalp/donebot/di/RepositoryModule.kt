@@ -3,6 +3,7 @@ package com.utakatalp.donebot.di
 import com.utakatalp.donebot.data.engine.PomodoroEngineImpl
 import com.utakatalp.donebot.data.repository.AuthRepositoryImpl
 import com.utakatalp.donebot.data.repository.PomodoroPreferencesImpl
+import com.utakatalp.donebot.data.repository.ReminderPreferencesImpl
 import com.utakatalp.donebot.data.repository.SessionPreferencesImpl
 import com.utakatalp.donebot.data.repository.TaskRepositoryImpl
 import com.utakatalp.donebot.data.repository.TaskSyncRepositoryImpl
@@ -14,6 +15,7 @@ import com.utakatalp.donebot.data.source.remote.datasource.TaskRemoteDataSourceI
 import com.utakatalp.donebot.domain.engine.PomodoroEngine
 import com.utakatalp.donebot.domain.repository.AuthRepository
 import com.utakatalp.donebot.domain.repository.PomodoroPreferences
+import com.utakatalp.donebot.domain.repository.ReminderPreferences
 import com.utakatalp.donebot.domain.repository.SessionPreferences
 import com.utakatalp.donebot.domain.repository.TaskRepository
 import com.utakatalp.donebot.domain.repository.TaskSyncRepository
@@ -51,6 +53,9 @@ abstract class RepositoryModule {
 
     @Binds @Singleton
     abstract fun bindPomodoroPreferences(impl: PomodoroPreferencesImpl): PomodoroPreferences
+
+    @Binds @Singleton
+    abstract fun bindReminderPreferences(impl: ReminderPreferencesImpl): ReminderPreferences
 
     @Binds @Singleton
     abstract fun bindPomodoroEngine(impl: PomodoroEngineImpl): PomodoroEngine
