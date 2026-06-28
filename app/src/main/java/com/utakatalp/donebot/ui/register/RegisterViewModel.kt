@@ -3,10 +3,9 @@ package com.utakatalp.donebot.ui.register
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.utakatalp.donebot.domain.model.AuthSession
-import com.utakatalp.donebot.domain.repository.SessionPreferences
-import com.utakatalp.donebot.domain.repository.TaskSyncRepository
+import com.utakatalp.donebot.domain.repository.AuthSessionRepository
 import com.utakatalp.donebot.domain.repository.UserRepository
+import com.utakatalp.donebot.domain.usecase.SyncPendingTasksUseCase
 import com.utakatalp.donebot.navigation.Home
 import com.utakatalp.donebot.navigation.Login
 import com.utakatalp.donebot.navigation.NavigationEffect
@@ -31,8 +30,8 @@ private const val PASSWORD_STRONG_LENGTH = 12
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
     private val userRepository: UserRepository,
-    private val sessionPreferences: SessionPreferences,
-    private val taskSyncRepository: TaskSyncRepository,
+    private val authSession: AuthSessionRepository,
+    private val syncPendingTasksUseCase: SyncPendingTasksUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(UiState())
@@ -53,7 +52,7 @@ class RegisterViewModel @Inject constructor(
             is UiAction.OnPasswordChange -> updatePassword(action.value)
             is UiAction.OnConfirmPasswordChange -> updateConfirmPassword(action.value)
             UiAction.OnPasswordVisibilityTap -> togglePasswordVisibility()
-            UiAction.OnSignUpTap -> handleSignUpTap()
+            UiAction.OnSignUpTap -> trySignUp()
             UiAction.OnLoginTap -> _navEffect.trySend(NavigationEffect.Navigate(Login))
         }
     }
@@ -97,13 +96,13 @@ class RegisterViewModel @Inject constructor(
         it.copy(isPasswordVisible = !it.isPasswordVisible)
     }
 
-    private fun handleSignUpTap() {
+    private fun trySignUp() {
         hasSubmittedOnce = true
-        val state = _uiState.value
-        val fullNameError = validateFullName(state.fullName)
-        val emailError = validateEmail(state.email)
-        val passwordError = validatePassword(state.password)
-        val confirmPasswordError = validateConfirmPassword(state.password, state.confirmPassword)
+        val current = _uiState.value
+        val fullNameError = validateFullName(current.fullName)
+        val emailError = validateEmail(current.email)
+        val passwordError = validatePassword(current.password)
+        val confirmPasswordError = validateConfirmPassword(current.password, current.confirmPassword)
 
         if (fullNameError != null || emailError != null || passwordError != null || confirmPasswordError != null) {
             _uiState.update {
@@ -117,34 +116,29 @@ class RegisterViewModel @Inject constructor(
             return
         }
 
-        register()
-    }
-
-    private fun register() = viewModelScope.launch {
-        val state = _uiState.value
-        _uiState.update { it.copy(isLoading = true, generalError = null) }
-        userRepository.register(
-            email = state.email,
-            password = state.password,
-            displayName = state.fullName,
-        )
-            .onSuccess { onRegisterSuccess(it) }
-            .onFailure { onRegisterFailure(it) }
-    }
-
-    private suspend fun onRegisterSuccess(session: AuthSession) {
-        sessionPreferences.saveSession(session)
-        taskSyncRepository.syncPendingTasks()
-        _uiState.update { it.copy(isLoading = false, isRedirecting = true) }
-        _navEffect.trySend(NavigationEffect.Navigate(Home))
-    }
-
-    private fun onRegisterFailure(error: Throwable) {
-        _uiState.update {
-            it.copy(
-                isLoading = false,
-                generalError = RegisterError(error.message ?: "Registration failed"),
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, generalError = null) }
+            userRepository.register(
+                email = current.email,
+                password = current.password,
+                displayName = current.fullName,
             )
+                .onSuccess { session ->
+                    authSession.saveSession(session)
+                    // Push any guest-mode pending rows under the new account. A brand-new
+                    // account has nothing on the server, so we don't need fetchTasks() here.
+                    syncPendingTasksUseCase()
+                    _uiState.update { it.copy(isLoading = false, isRedirecting = true) }
+                    _navEffect.trySend(NavigationEffect.Navigate(Home))
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            generalError = RegisterError(error.message ?: "Registration failed"),
+                        )
+                    }
+                }
         }
     }
 

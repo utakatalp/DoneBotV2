@@ -57,10 +57,10 @@ internal fun HomeContent(
                     onDateSelect = { onAction(UiAction.OnDateSelect(it)) },
                     onPreviousMonth = { onAction(UiAction.OnPreviousMonth) },
                     onNextMonth = { onAction(UiAction.OnNextMonth) },
-                    today = LocalDate.now(),
+                    today = uiState.today,
                 )
                 HomeTaskList(
-                    tasks = uiState.tasks.filter { it.id != uiState.pendingDeleteTask?.id },
+                    tasks = uiState.tasks,
                     onTaskCheck = { onAction(UiAction.OnTaskCheck(it)) },
                     onTaskClick = { onAction(UiAction.OnTaskClick(it)) },
                     onTaskLongPress = { onAction(UiAction.OnTaskLongPress(it)) },

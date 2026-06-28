@@ -3,7 +3,7 @@ package com.utakatalp.donebot.ui.addpomodorotimer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.utakatalp.donebot.domain.model.Pomodoro
-import com.utakatalp.donebot.domain.repository.PomodoroPreferences
+import com.utakatalp.donebot.domain.repository.PomodoroSettingsRepository
 import com.utakatalp.donebot.navigation.NavigationEffect
 import com.utakatalp.donebot.ui.addpomodorotimer.AddPomodoroTimerContract.UiAction
 import com.utakatalp.donebot.ui.addpomodorotimer.AddPomodoroTimerContract.UiEffect
@@ -20,7 +20,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddPomodoroTimerViewModel @Inject constructor(
-    private val pomodoroPreferences: PomodoroPreferences,
+    private val pomodoroSettings: PomodoroSettingsRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(UiState())
@@ -34,7 +34,7 @@ class AddPomodoroTimerViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            pomodoroPreferences.getSettings()?.let { saved ->
+            pomodoroSettings.getSettings()?.let { saved ->
                 _uiState.update {
                     it.copy(
                         focusMinutes = saved.focusTime,
@@ -89,7 +89,7 @@ class AddPomodoroTimerViewModel @Inject constructor(
         val state = _uiState.value
         _uiState.update { it.copy(isSaving = true) }
         runCatching {
-            pomodoroPreferences.saveSettings(
+            pomodoroSettings.saveSettings(
                 Pomodoro(
                     focusTime = state.focusMinutes,
                     shortBreak = state.shortBreakMinutes,

@@ -5,13 +5,13 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import com.utakatalp.donebot.domain.model.Pomodoro
-import com.utakatalp.donebot.domain.repository.PomodoroPreferences
+import com.utakatalp.donebot.domain.repository.PomodoroSettingsRepository
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
-class PomodoroPreferencesImpl @Inject constructor(
+class PomodoroSettingsRepositoryImpl @Inject constructor(
     private val dataStore: DataStore<Preferences>,
-) : PomodoroPreferences {
+) : PomodoroSettingsRepository {
 
     override suspend fun getSettings(): Pomodoro? {
         val prefs = dataStore.data.first()

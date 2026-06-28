@@ -14,7 +14,8 @@ object HomeContract {
         data class Success(
             val selectedDate: LocalDate,
             val displayedMonth: YearMonth = YearMonth.from(selectedDate),
-            val tasks: List<Task> = emptyList(),
+            val today: LocalDate = LocalDate.now(),
+            val tasks: List<Task> = emptyList(),         // already filtered to selectedDate AND excludes pendingDeleteTask
             val taskDates: Set<LocalDate> = emptySet(),
             val pendingDeleteTask: Task? = null,
             val isDeleteDialogOpen: Boolean = false,
@@ -36,12 +37,11 @@ object HomeContract {
         data object OnPomodoroTap : UiAction
         data object OnDeleteDialogConfirm : UiAction
         data object OnDeleteDialogDismiss : UiAction
-        data object OnUndoDelete : UiAction
         data object OnRetry : UiAction
         data object OnRefresh : UiAction
-        data object RecheckPermissions : UiAction
-        data class PermissionGranted(val type: PermissionType) : UiAction
-        data class DismissPermission(val type: PermissionType) : UiAction
+        data object OnRecheckPermissions : UiAction
+        data class OnPermissionGranted(val type: PermissionType) : UiAction
+        data class OnPermissionDismissed(val type: PermissionType) : UiAction
     }
 
     sealed interface UiEffect {

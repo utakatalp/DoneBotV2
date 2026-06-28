@@ -2,7 +2,7 @@ package com.utakatalp.donebot.ui.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.utakatalp.donebot.domain.repository.ReminderPreferences
+import com.utakatalp.donebot.domain.repository.ReminderSettingsRepository
 import com.utakatalp.donebot.domain.usecase.RescheduleAllAlarmsUseCase
 import com.utakatalp.donebot.ui.settings.SettingsContract.UiAction
 import com.utakatalp.donebot.ui.settings.SettingsContract.UiState
@@ -16,11 +16,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val reminderPreferences: ReminderPreferences,
+    private val reminderSettings: ReminderSettingsRepository,
     private val rescheduleAllAlarmsUseCase: RescheduleAllAlarmsUseCase,
 ) : ViewModel() {
 
-    val uiState: StateFlow<UiState> = reminderPreferences.observeLeadMinutes()
+    val uiState: StateFlow<UiState> = reminderSettings.observeLeadMinutes()
         .map { UiState(leadMinutes = it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), UiState())
 
@@ -31,7 +31,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     private fun setLeadMinutes(value: Int) = viewModelScope.launch {
-        reminderPreferences.setLeadMinutes(value)
+        reminderSettings.setLeadMinutes(value)
         rescheduleAllAlarmsUseCase()
     }
 }

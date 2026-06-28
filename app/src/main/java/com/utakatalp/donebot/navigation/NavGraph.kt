@@ -42,6 +42,8 @@ import com.utakatalp.donebot.ui.login.LoginScreen
 import com.utakatalp.donebot.ui.login.LoginViewModel
 import com.utakatalp.donebot.ui.onboarding.OnboardingScreen
 import com.utakatalp.donebot.ui.onboarding.OnboardingViewModel
+import com.todoapp.uikit.extensions.collectWithLifecycle
+import com.utakatalp.donebot.ui.profile.ProfileContract
 import com.utakatalp.donebot.ui.profile.ProfileScreen
 import com.utakatalp.donebot.ui.profile.ProfileViewModel
 import com.utakatalp.donebot.ui.register.RegisterScreen
@@ -66,6 +68,7 @@ fun AuthNavHost(
         entryProvider = entryProvider {
             entry<Onboarding> {
                 val viewModel = hiltViewModel<OnboardingViewModel>()
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
                 NavigationEffectController(
                     navEffect = viewModel.navEffect,
                     onNavigate = { key ->
@@ -76,7 +79,7 @@ fun AuthNavHost(
                     }
                 )
                 OnboardingScreen(
-                    uiState = viewModel.uiState,
+                    uiState = uiState,
                     onAction = viewModel::onAction,
                 )
             }
@@ -219,6 +222,11 @@ fun MainNavHost(
                         }
                     },
                 )
+                viewModel.uiEffect.collectWithLifecycle { effect ->
+                    when (effect) {
+                        ProfileContract.UiEffect.Logout -> onLogout()
+                    }
+                }
                 ProfileScreen(
                     uiState = viewModel.uiState,
                     onAction = viewModel::onAction,

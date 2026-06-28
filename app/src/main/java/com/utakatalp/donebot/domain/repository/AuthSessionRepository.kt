@@ -3,7 +3,7 @@ package com.utakatalp.donebot.domain.repository
 import com.utakatalp.donebot.domain.model.AuthSession
 import kotlinx.coroutines.flow.Flow
 
-interface SessionPreferences {
+interface AuthSessionRepository {
     suspend fun setAccessToken(token: String)
     suspend fun getAccessToken(): String?
 

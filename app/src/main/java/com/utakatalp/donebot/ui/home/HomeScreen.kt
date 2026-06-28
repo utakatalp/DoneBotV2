@@ -46,7 +46,7 @@ fun HomeScreen(
         }
     }
     LifecycleResumeEffect(Unit) {
-        onAction(UiAction.RecheckPermissions)
+        onAction(UiAction.OnRecheckPermissions)
         onPauseOrDispose { }
     }
 

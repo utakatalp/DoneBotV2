@@ -36,14 +36,14 @@ internal fun HomePermissionPrompts(
                     PermissionType.NOTIFICATION ->
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                             NotificationPermissionPrompt(
-                                onGranted = { onAction(UiAction.PermissionGranted(type)) },
-                                onDismiss = { onAction(UiAction.DismissPermission(type)) },
+                                onGranted = { onAction(UiAction.OnPermissionGranted(type)) },
+                                onDismiss = { onAction(UiAction.OnPermissionDismissed(type)) },
                             )
                         }
                     PermissionType.OVERLAY ->
                         OverlayPermissionPrompt(
-                            onGranted = { onAction(UiAction.PermissionGranted(type)) },
-                            onDismiss = { onAction(UiAction.DismissPermission(type)) },
+                            onGranted = { onAction(UiAction.OnPermissionGranted(type)) },
+                            onDismiss = { onAction(UiAction.OnPermissionDismissed(type)) },
                         )
                 }
             }

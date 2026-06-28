@@ -112,6 +112,7 @@ class AddTaskViewModel @Inject constructor(
         addTaskUseCase(state.toNewTask())
             .onSuccess { _navEffect.trySend(NavigationEffect.GoBack) }
             .onFailure { onAddTaskFailure(it) }
+        _uiState.update { it.copy(isSaving = false) }
     }
 
     private fun UiState.toNewTask(): Task = Task(

@@ -7,9 +7,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -45,16 +47,49 @@ fun ProfileScreen(
             verticalArrangement = Arrangement.Center,
         ) {
             if (state.isAuthenticated) {
-                Text(
-                    text = stringResource(R.string.profile_authenticated_title),
-                    style = MaterialTheme.typography.headlineSmall,
-                    textAlign = TextAlign.Center,
-                )
+                AuthenticatedProfileBlock(onAction = onAction)
             } else {
                 GuestProfileBlock(onAction = onAction)
             }
         }
     }
+
+    if (state.showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { onAction(UiAction.OnLogoutDismiss) },
+            title = { Text(stringResource(R.string.profile_logout_dialog_title)) },
+            text = { Text(stringResource(R.string.profile_logout_dialog_message)) },
+            confirmButton = {
+                TextButton(onClick = { onAction(UiAction.OnLogoutConfirm) }) {
+                    Text(stringResource(R.string.profile_logout_dialog_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { onAction(UiAction.OnLogoutDismiss) }) {
+                    Text(stringResource(R.string.profile_logout_dialog_dismiss))
+                }
+            },
+        )
+    }
+}
+
+@Composable
+private fun AuthenticatedProfileBlock(onAction: (UiAction) -> Unit) {
+    Text(
+        text = stringResource(R.string.profile_authenticated_title),
+        style = MaterialTheme.typography.headlineSmall,
+        textAlign = TextAlign.Center,
+    )
+    Spacer(Modifier.height(32.dp))
+    TDButton(
+        modifier = Modifier.fillMaxWidth(),
+        text = stringResource(R.string.profile_logout_button),
+        isEnable = true,
+        type = TDButtonType.OUTLINE,
+        size = TDButtonSize.MEDIUM,
+        icon = null,
+        onClick = { onAction(UiAction.OnLogoutTap) },
+    )
 }
 
 @Composable

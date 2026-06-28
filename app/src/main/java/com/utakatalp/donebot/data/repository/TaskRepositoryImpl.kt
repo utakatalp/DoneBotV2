@@ -1,5 +1,6 @@
 package com.utakatalp.donebot.data.repository
 
+import android.util.Log
 import com.utakatalp.donebot.common.handleLocal
 import com.utakatalp.donebot.data.mapper.toDomain
 import com.utakatalp.donebot.data.mapper.toEntity
@@ -129,6 +130,7 @@ class TaskRepositoryImpl @Inject constructor(
 
     override suspend fun syncLocalTasksToServer(): Result<Unit> = syncMutex.withLock {
         val pending = localDataSource.findPending()
+        Log.d(TAG, "[syncLocalTasksToServer] found ${pending.size} pending row(s) to push")
         var firstError: Throwable? = null
         for (entity in pending) {
             val result = when (entity.syncStatus) {
@@ -137,60 +139,193 @@ class TaskRepositoryImpl @Inject constructor(
                 SyncStatus.PENDING_DELETE -> syncDeleted(entity)
                 SyncStatus.SYNCED -> Result.success(Unit)
             }
-            result.onFailure { if (firstError == null) firstError = it }
+            result.onFailure {
+                if (firstError == null) firstError = it
+                // Bail on the first Unauthorized: every remaining row would hit the same
+                // 401 (same broken auth state). The authenticator already tried to refresh.
+                if (it is com.utakatalp.donebot.common.DomainException.Unauthorized) {
+                    Log.d(
+                        TAG,
+                        "[syncLocalTasksToServer] bailing early on Unauthorized — " +
+                            "remaining ${pending.size - pending.indexOf(entity) - 1} row(s) skipped",
+                    )
+                    return@withLock Result.failure(it)
+                }
+            }
         }
+        Log.d(
+            TAG,
+            "[syncLocalTasksToServer] done — ${if (firstError == null) "all OK" else "firstError=${firstError!!::class.simpleName}: ${firstError!!.message}"}",
+        )
         firstError?.let { Result.failure(it) } ?: Result.success(Unit)
     }
 
-    private suspend fun syncCreated(entity: TaskEntity): Result<Unit> =
-        remoteDataSource.createTask(entity.toDomain()).mapCatching { remote ->
+    private suspend fun syncCreated(entity: TaskEntity): Result<Unit> {
+        Log.d(
+            TAG,
+            "[syncCreated] POST localId=${entity.id} title='${entity.title}'",
+        )
+        return remoteDataSource.createTask(entity.toDomain()).mapCatching { remote ->
+            Log.d(
+                TAG,
+                "[syncCreated] OK localId=${entity.id} remoteId=${remote.id} -> SYNCED",
+            )
             localDataSource.updateTask(entity.copy(remoteId = remote.id, syncStatus = SyncStatus.SYNCED))
+        }.onFailure {
+            Log.d(
+                TAG,
+                "[syncCreated] FAILED localId=${entity.id} (${it::class.simpleName}: ${it.message}); row stays PENDING_CREATE",
+            )
         }
+    }
 
     private suspend fun syncUpdated(entity: TaskEntity): Result<Unit> {
         val remoteId = entity.remoteId
-            ?: return handleLocal {
+        if (remoteId == null) {
+            Log.d(
+                TAG,
+                "[syncUpdated] localId=${entity.id} has no remoteId -> demoting to PENDING_CREATE",
+            )
+            return handleLocal {
                 localDataSource.updateTask(entity.copy(syncStatus = SyncStatus.PENDING_CREATE))
             }
-        return remoteDataSource.updateTask(remoteId, entity.toDomain()).mapCatching {
-            localDataSource.updateTask(entity.copy(syncStatus = SyncStatus.SYNCED))
         }
+        Log.d(
+            TAG,
+            "[syncUpdated] PUT localId=${entity.id} remoteId=$remoteId title='${entity.title}'",
+        )
+        return remoteDataSource.updateTask(remoteId, entity.toDomain()).fold(
+            onSuccess = {
+                Log.d(TAG, "[syncUpdated] OK localId=${entity.id} -> SYNCED")
+                handleLocal {
+                    localDataSource.updateTask(entity.copy(syncStatus = SyncStatus.SYNCED))
+                }
+            },
+            onFailure = { error ->
+                // 404 means the server-side row is gone (e.g., another device deleted it
+                // while this device was editing offline). Edit-beats-delete: preserve the
+                // user's edits by clearing remoteId and demoting to PENDING_CREATE so the
+                // next sync POSTs a fresh copy. Return success so the per-row loop in
+                // syncLocalTasksToServer continues to the next entity.
+                if (error is com.utakatalp.donebot.common.DomainException.NotFound) {
+                    Log.d(
+                        TAG,
+                        "[syncUpdated] NotFound for localId=${entity.id} remoteId=$remoteId -> " +
+                            "server row gone; demoting to PENDING_CREATE (edit-beats-delete)",
+                    )
+                    handleLocal {
+                        localDataSource.updateTask(
+                            entity.copy(remoteId = null, syncStatus = SyncStatus.PENDING_CREATE),
+                        )
+                    }
+                } else {
+                    Log.d(
+                        TAG,
+                        "[syncUpdated] FAILED localId=${entity.id} (${error::class.simpleName}: ${error.message}); " +
+                            "row stays PENDING_UPDATE",
+                    )
+                    Result.failure(error)
+                }
+            },
+        )
     }
 
     private suspend fun syncDeleted(entity: TaskEntity): Result<Unit> {
         val remoteId = entity.remoteId
-            ?: return handleLocal { localDataSource.deleteTask(entity.id) }
-        return remoteDataSource.deleteTask(remoteId).mapCatching {
-            localDataSource.deleteTask(entity.id)
+        if (remoteId == null) {
+            Log.d(
+                TAG,
+                "[syncDeleted] localId=${entity.id} has no remoteId -> deleting locally only",
+            )
+            return handleLocal { localDataSource.deleteTask(entity.id) }
         }
+        Log.d(
+            TAG,
+            "[syncDeleted] DELETE localId=${entity.id} remoteId=$remoteId title='${entity.title}'",
+        )
+        return remoteDataSource.deleteTask(remoteId).fold(
+            onSuccess = {
+                Log.d(TAG, "[syncDeleted] OK localId=${entity.id} -> removed from Room")
+                handleLocal { localDataSource.deleteTask(entity.id) }
+            },
+            onFailure = { error ->
+                // 404 from the server means the row is already gone there — our local PENDING_DELETE
+                // marker has nothing left to push. Prune the local row so it stops retrying forever.
+                if (error is com.utakatalp.donebot.common.DomainException.NotFound) {
+                    Log.d(
+                        TAG,
+                        "[syncDeleted] NotFound for localId=${entity.id} remoteId=$remoteId -> " +
+                            "server already deleted it; pruning local row",
+                    )
+                    handleLocal { localDataSource.deleteTask(entity.id) }
+                } else {
+                    Log.d(
+                        TAG,
+                        "[syncDeleted] FAILED localId=${entity.id} (${error::class.simpleName}: ${error.message}); " +
+                            "row stays PENDING_DELETE",
+                    )
+                    Result.failure(error)
+                }
+            },
+        )
     }
 
     override suspend fun syncRemoteTasksWithLocal(): Result<Unit> = syncMutex.withLock {
+        Log.d(TAG, "[syncRemoteTasksWithLocal] GET /tasks")
         val fetchResult = remoteDataSource.getTasks()
-        val list = fetchResult.getOrElse { return@withLock Result.failure(it) }
+        val list = fetchResult.getOrElse {
+            Log.d(
+                TAG,
+                "[syncRemoteTasksWithLocal] GET FAILED (${it::class.simpleName}: ${it.message})",
+            )
+            return@withLock Result.failure(it)
+        }
+        Log.d(TAG, "[syncRemoteTasksWithLocal] server returned ${list.tasks.size} task(s)")
         val seen = mutableSetOf<Long>()
+        var inserts = 0
+        var overwrites = 0
+        var skipped = 0
         for (remote in list.tasks) {
             seen.add(remote.id)
             val existing = localDataSource.getTaskByRemoteId(remote.id)
             when {
-                existing == null -> localDataSource.insertTask(
-                    remote.toEntity(syncStatus = SyncStatus.SYNCED),
-                )
-                existing.syncStatus == SyncStatus.SYNCED -> localDataSource.updateTask(
-                    remote.toEntity(
-                        localId = existing.id,
-                        syncStatus = SyncStatus.SYNCED,
-                        orderIndex = existing.orderIndex,
-                    ),
-                )
-                else -> Unit
+                existing == null -> {
+                    localDataSource.insertTask(remote.toEntity(syncStatus = SyncStatus.SYNCED))
+                    inserts++
+                }
+                existing.syncStatus == SyncStatus.SYNCED -> {
+                    localDataSource.updateTask(
+                        remote.toEntity(
+                            localId = existing.id,
+                            syncStatus = SyncStatus.SYNCED,
+                            orderIndex = existing.orderIndex,
+                        ),
+                    )
+                    overwrites++
+                }
+                else -> {
+                    // PENDING_* row — local wins until pushed
+                    skipped++
+                }
             }
         }
         val localSynced = localDataSource.findSyncedRemoteIds()
         val orphaned = localSynced.filter { it !in seen }
         if (orphaned.isNotEmpty()) {
+            Log.d(
+                TAG,
+                "[syncRemoteTasksWithLocal] deleting ${orphaned.size} orphan(s) (server-side deletions): $orphaned",
+            )
             localDataSource.deleteSyncedByRemoteIds(orphaned)
         }
+        Log.d(
+            TAG,
+            "[syncRemoteTasksWithLocal] done — inserted=$inserts overwritten=$overwrites pending-skipped=$skipped orphans-deleted=${orphaned.size}",
+        )
         Result.success(Unit)
+    }
+
+    private companion object {
+        const val TAG = "SyncFlow"
     }
 }

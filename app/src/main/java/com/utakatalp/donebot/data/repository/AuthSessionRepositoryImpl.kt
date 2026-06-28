@@ -1,21 +1,25 @@
 package com.utakatalp.donebot.data.repository
 
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.utakatalp.donebot.domain.repository.SessionPreferences
+import com.utakatalp.donebot.domain.repository.AuthSessionRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class SessionPreferencesImpl @Inject constructor(
+private const val TAG = "AuthFlow"
+
+class AuthSessionRepositoryImpl @Inject constructor(
     private val dataStore: DataStore<Preferences>,
-) : SessionPreferences {
+) : AuthSessionRepository {
 
     override suspend fun setAccessToken(token: String) {
+        Log.d(TAG, "[AuthSession] setAccessToken ...${token.takeLast(8)}")
         dataStore.edit { it[ACCESS_TOKEN] = token }
     }
 
@@ -23,6 +27,7 @@ class SessionPreferencesImpl @Inject constructor(
         dataStore.data.map { it[ACCESS_TOKEN] }.first()?.ifBlank { null }
 
     override suspend fun setRefreshToken(token: String) {
+        Log.d(TAG, "[AuthSession] setRefreshToken ...${token.takeLast(8)}")
         dataStore.edit { it[REFRESH_TOKEN] = token }
     }
 
@@ -40,6 +45,7 @@ class SessionPreferencesImpl @Inject constructor(
         dataStore.data.map { it[EXPIRES_AT] }.first()
 
     override suspend fun clear() {
+        Log.d(TAG, "[AuthSession] clear() — wiping access + refresh + expiresAt", Throwable("clear caller"))
         dataStore.edit {
             it.remove(ACCESS_TOKEN)
             it.remove(REFRESH_TOKEN)

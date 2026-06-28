@@ -3,7 +3,16 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <!-- SCHEDULE_EXACT_ALARM is install-time on API 31-32 (auto-granted) but became
+         user-revocable on API 33+. Cap it to 32 so we don't depend on the user flipping
+         a Special App Access toggle on newer devices. -->
+    <uses-permission
+        android:name="android.permission.SCHEDULE_EXACT_ALARM"
+        android:maxSdkVersion="32" />
+    <!-- USE_EXACT_ALARM (API 33+) is install-time and auto-granted for apps whose core
+         function is alarms/reminders — that's us. canScheduleExactAlarms() returns true
+         once this is declared, so setExactAndAllowWhileIdle works without user action. -->
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
@@ -53,6 +62,23 @@
         <receiver
             android:name=".data.alarm.AlarmFireReceiver"
             android:exported="false" />
+
+        <!-- Disable androidx.startup's auto-init of WorkManager so DoneBotApplication's
+             Configuration.Provider can take over and supply the HiltWorkerFactory.
+             Without this, the default factory tries to instantiate workers via
+             reflection and SyncWorker / FetchTasksWorker (which need TaskRepository
+             injected) silently fail to construct — enqueue logs appear but doWork
+             never runs. -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
     </application>
 
 </manifest>

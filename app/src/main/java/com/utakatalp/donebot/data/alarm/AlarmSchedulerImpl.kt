@@ -23,19 +23,27 @@ class AlarmSchedulerImpl(
             .atZone(ZoneId.systemDefault())
             .toInstant()
             .toEpochMilli()
+        val requestCode = taskRequestCode(item.taskId)
+        Log.d(
+            TAG,
+            "[AlarmSchedulerImpl] scheduleForTask taskId=${item.taskId} " +
+                "fireAt=${item.fireAt} triggerAtMillis=$triggerAtMillis requestCode=$requestCode",
+        )
         scheduleAt(
             triggerAtMillis = triggerAtMillis,
             pendingIntent = buildFirePendingIntent(
-                requestCode = taskRequestCode(item.taskId),
+                requestCode = requestCode,
                 intent = buildPreferredBroadcast(item),
             ),
         )
     }
 
     override fun cancelForTask(taskId: Long) {
+        val requestCode = taskRequestCode(taskId)
+        Log.d(TAG, "[AlarmSchedulerImpl] cancelForTask taskId=$taskId requestCode=$requestCode")
         alarmManager.cancel(
             buildFirePendingIntent(
-                requestCode = taskRequestCode(taskId),
+                requestCode = requestCode,
                 intent = Intent(context, AlarmFireReceiver::class.java),
             ),
         )
@@ -51,12 +59,15 @@ class AlarmSchedulerImpl(
 
     private fun taskRequestCode(taskId: Long): Int = (TASK_REQUEST_BASE + taskId).toInt()
 
-    private fun buildPreferredBroadcast(item: AlarmItem): Intent =
-        if (Settings.canDrawOverlays(context)) {
-            buildOverlayBroadcast(item)
-        } else {
-            buildNotificationBroadcast(item)
-        }
+    private fun buildPreferredBroadcast(item: AlarmItem): Intent {
+        val canDrawOverlays = Settings.canDrawOverlays(context)
+        Log.d(
+            TAG,
+            "[AlarmSchedulerImpl] buildPreferredBroadcast taskId=${item.taskId} " +
+                "canDrawOverlays=$canDrawOverlays -> target=${if (canDrawOverlays) "OVERLAY" else "NOTIFICATION"}",
+        )
+        return if (canDrawOverlays) buildOverlayBroadcast(item) else buildNotificationBroadcast(item)
+    }
 
     private fun buildOverlayBroadcast(item: AlarmItem): Intent =
         Intent(context, AlarmFireReceiver::class.java).apply {
@@ -75,21 +86,35 @@ class AlarmSchedulerImpl(
         }
 
     private fun scheduleAt(triggerAtMillis: Long, pendingIntent: PendingIntent) {
-        if (triggerAtMillis <= System.currentTimeMillis()) {
-            Log.d(TAG, "scheduleAt: skipping past trigger=$triggerAtMillis")
+        val now = System.currentTimeMillis()
+        if (triggerAtMillis <= now) {
+            Log.d(
+                TAG,
+                "[AlarmSchedulerImpl] scheduleAt: SKIPPED past trigger " +
+                    "(triggerAtMillis=$triggerAtMillis now=$now)",
+            )
             return
         }
+        val canExact = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms()
+        val deltaSec = (triggerAtMillis - now) / 1000
+        Log.d(
+            TAG,
+            "[AlarmSchedulerImpl] scheduleAt: arming alarm in ${deltaSec}s " +
+                "(canScheduleExactAlarms=$canExact)",
+        )
         runCatching {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+            if (!canExact) {
                 alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
+                Log.d(TAG, "[AlarmSchedulerImpl] scheduleAt: set INEXACT (canScheduleExactAlarms=false)")
             } else {
                 alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
+                Log.d(TAG, "[AlarmSchedulerImpl] scheduleAt: set EXACT")
             }
-        }.onFailure { Log.w(TAG, "scheduleAt failed", it) }
+        }.onFailure { Log.d(TAG, "[AlarmSchedulerImpl] scheduleAt FAILED", it) }
     }
 
     private companion object {
         const val TASK_REQUEST_BASE = 0x0200_0000L
-        const val TAG = "AlarmScheduler"
+        const val TAG = "AlarmFlow"
     }
 }

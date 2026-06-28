@@ -30,6 +30,7 @@ suspend fun <T> handleRequest(request: suspend () -> Response<BaseResponse<T?>>)
             ?: "Something went wrong"
         when (response.code()) {
             401, 403 -> Result.failure(DomainException.Unauthorized())
+            404 -> Result.failure(DomainException.NotFound(message))
             else -> Result.failure(DomainException.Server(message))
         }
     } else {
@@ -47,16 +48,22 @@ suspend fun <T> handleRequest(request: suspend () -> Response<BaseResponse<T?>>)
 sealed class DomainException(message: String) : Exception(message) {
     class NoInternet : DomainException("No internet connection")
     class Unauthorized : DomainException("Unauthorized")
+    class NotFound(message: String) : DomainException(message)
     class Server(message: String) : DomainException(message)
     class Database(message: String) : DomainException(message)
     class Unknown(cause: Throwable) : DomainException(cause.message ?: "Unknown error")
 
     companion object {
         private const val HTTP_STATUS_UNAUTHORIZED = 401
+        private const val HTTP_STATUS_NOT_FOUND = 404
 
         fun fromThrowable(t: Throwable): DomainException = when (t) {
             is UnknownHostException, is SocketTimeoutException -> NoInternet()
-            is HttpException -> if (t.code() == HTTP_STATUS_UNAUTHORIZED) Unauthorized() else Server("Server error")
+            is HttpException -> when (t.code()) {
+                HTTP_STATUS_UNAUTHORIZED -> Unauthorized()
+                HTTP_STATUS_NOT_FOUND -> NotFound(t.message())
+                else -> Server("Server error")
+            }
             is SQLiteException -> Database(t.message ?: "Database error")
             else -> Unknown(t)
         }

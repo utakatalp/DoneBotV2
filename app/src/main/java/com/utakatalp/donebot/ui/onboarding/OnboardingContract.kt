@@ -9,12 +9,7 @@ object OnboardingContract {
     )
 
     sealed interface UiAction {
-        data object OnLoginClick : UiAction
-        data object OnGetStartedClick : UiAction
-    }
-
-    sealed interface UiEffect {
-        data object NavigateToLogin : UiEffect
-        data object NavigateToHome : UiEffect
+        data object OnLoginTap : UiAction
+        data object OnGetStartedTap : UiAction
     }
 }

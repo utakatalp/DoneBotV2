@@ -3,10 +3,9 @@ package com.utakatalp.donebot.ui.login
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.utakatalp.donebot.domain.model.AuthSession
-import com.utakatalp.donebot.domain.repository.SessionPreferences
-import com.utakatalp.donebot.domain.repository.TaskSyncRepository
+import com.utakatalp.donebot.domain.repository.AuthSessionRepository
 import com.utakatalp.donebot.domain.repository.UserRepository
+import com.utakatalp.donebot.domain.usecase.FetchTasksUseCase
 import com.utakatalp.donebot.navigation.Home
 import com.utakatalp.donebot.navigation.NavigationEffect
 import com.utakatalp.donebot.navigation.Register
@@ -29,8 +28,8 @@ private const val PASSWORD_MIN_LENGTH = 8
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val userRepository: UserRepository,
-    private val sessionPreferences: SessionPreferences,
-    private val taskSyncRepository: TaskSyncRepository,
+    private val authSession: AuthSessionRepository,
+    private val fetchTasksUseCase: FetchTasksUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(UiState())
@@ -47,7 +46,7 @@ class LoginViewModel @Inject constructor(
             is UiAction.OnEmailChange -> updateEmail(action.value)
             is UiAction.OnPasswordChange -> updatePassword(action.value)
             UiAction.OnPasswordVisibilityTap -> togglePasswordVisibility()
-            UiAction.OnLoginTap -> handleLoginTap()
+            UiAction.OnLoginTap -> tryLogin()
             UiAction.OnForgotPasswordTap -> _uiEffect.trySend(UiEffect.ShowToast("Forgot password not implemented yet"))
             UiAction.OnRegisterTap -> _navEffect.trySend(NavigationEffect.Navigate(Register))
         }
@@ -71,14 +70,11 @@ class LoginViewModel @Inject constructor(
         it.copy(isPasswordVisible = !it.isPasswordVisible)
     }
 
-    private fun handleLoginTap() {
-        val currentState = _uiState.value
-        val emailError = validateEmail(currentState.email)
-        val passwordError = validatePassword(currentState.password)
-
-        if (emailError == null && passwordError == null) {
-            login()
-        } else {
+    private fun tryLogin() {
+        val current = _uiState.value
+        val emailError = validateEmail(current.email)
+        val passwordError = validatePassword(current.password)
+        if (emailError != null || passwordError != null) {
             _uiState.update {
                 it.copy(
                     emailError = emailError,
@@ -86,30 +82,29 @@ class LoginViewModel @Inject constructor(
                     hasSubmittedOnce = true,
                 )
             }
+            return
         }
-    }
 
-    private fun login() = viewModelScope.launch {
-        val (email, password) = _uiState.value.let { it.email to it.password }
-        _uiState.update { it.copy(isLoading = true, generalError = null) }
-        userRepository.login(email, password)
-            .onSuccess { onLoginSuccess(it) }
-            .onFailure { onLoginFailure(it) }
-    }
-
-    private suspend fun onLoginSuccess(session: AuthSession) {
-        sessionPreferences.saveSession(session)
-        taskSyncRepository.syncPendingTasks()
-        _uiState.update { it.copy(isLoading = false) }
-        _navEffect.trySend(NavigationEffect.Navigate(Home))
-    }
-
-    private fun onLoginFailure(error: Throwable) {
-        _uiState.update {
-            it.copy(
-                isLoading = false,
-                generalError = LoginError(error.message ?: "Login failed"),
-            )
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, generalError = null) }
+            userRepository.login(current.email, current.password)
+                .onSuccess { session ->
+                    authSession.saveSession(session)
+                    // Push any guest-mode pending rows AND pull the user's server-side tasks.
+                    // syncPendingTasks() alone only does the push; the user wouldn't see their
+                    // existing server tasks until the next foreground or pull-to-refresh.
+                    fetchTasksUseCase(force = true)
+                    _uiState.update { it.copy(isLoading = false) }
+                    _navEffect.trySend(NavigationEffect.Navigate(Home))
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            generalError = LoginError(error.message ?: "Login failed"),
+                        )
+                    }
+                }
         }
     }
 

@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.utakatalp.donebot.MainActivity
 import com.utakatalp.donebot.R
@@ -21,19 +22,23 @@ class NotificationService : Service() {
     private val notificationManager by lazy {
         getSystemService(NOTIFICATION_SERVICE) as NotificationManager
     }
-    private val ringtone = RingtoneHolder()
 
     override fun onCreate() {
         super.onCreate()
+        Log.d(TAG, "[NotificationService] onCreate")
         OverlayServiceChannel.ensure(this)
+        ReminderChannel.ensure(this)
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        promoteToForeground()
         val message = intent.getStringExtra(EXTRA_MESSAGE)
         val minutesBefore = intent.getLongExtra(EXTRA_MINUTES_BEFORE, 0L)
+        Log.d(TAG, "[NotificationService] onStartCommand message='$message' minutesBefore=$minutesBefore")
+        promoteToForeground()
         if (!message.isNullOrBlank()) {
             postReminder(message, minutesBefore.toInt())
+        } else {
+            Log.d(TAG, "[NotificationService] message blank, skipping postReminder")
         }
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf(startId)
@@ -53,15 +58,21 @@ class NotificationService : Service() {
         } else {
             getString(R.string.notification_reminder_title_in_minutes, minutesBefore)
         }
-        val notification = NotificationCompat.Builder(this, OverlayServiceChannel.CHANNEL_ID)
+        val notification = NotificationCompat.Builder(this, ReminderChannel.CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_popup_reminder)
             .setContentTitle(title)
             .setContentText(contentText)
             .setContentIntent(activityPendingIntent)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setAutoCancel(true)
             .build()
+        Log.d(
+            TAG,
+            "[NotificationService] postReminder id=$REMINDER_NOTIFICATION_ID " +
+                "channel=${ReminderChannel.CHANNEL_ID} title='$title' text='$contentText'",
+        )
         notificationManager.notify(REMINDER_NOTIFICATION_ID, notification)
-        ringtone.play(context = this, explicitUri = null)
     }
 
     private fun promoteToForeground() {
@@ -84,11 +95,11 @@ class NotificationService : Service() {
             } else {
                 startForeground(OverlayServiceChannel.FOREGROUND_NOTIFICATION_ID, placeholder)
             }
-        }
+            Log.d(TAG, "[NotificationService] promoteToForeground: success")
+        }.onFailure { Log.d(TAG, "[NotificationService] promoteToForeground: FAILED", it) }
     }
 
     override fun onDestroy() {
-        ringtone.stop()
         super.onDestroy()
     }
 
@@ -98,5 +109,6 @@ class NotificationService : Service() {
         const val EXTRA_MESSAGE = "extra_message"
         const val EXTRA_MINUTES_BEFORE = "extra_minutes_before"
         private const val REMINDER_NOTIFICATION_ID = 1
+        private const val TAG = "AlarmFlow"
     }
 }

@@ -7,7 +7,7 @@ import android.content.pm.ServiceInfo
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.IBinder
-import android.provider.Settings
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
@@ -18,7 +18,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -32,7 +31,6 @@ import com.todoapp.uikit.theme.TDTheme
 import com.utakatalp.donebot.MainActivity
 import com.utakatalp.donebot.R
 import com.utakatalp.donebot.common.RingtoneHolder
-import com.utakatalp.donebot.data.notification.NotificationService
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -67,6 +65,7 @@ class OverlayService :
 
     override fun onCreate() {
         super.onCreate()
+        Log.d(TAG, "[OverlayService] onCreate")
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         _savedStateRegistryController.performAttach()
         _savedStateRegistryController.performRestore(null)
@@ -75,34 +74,20 @@ class OverlayService :
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        // Defensive guard: if overlay permission was revoked between schedule and fire, hand
-        // off to the notification fallback so the user still sees the reminder.
-        if (!Settings.canDrawOverlays(this)) {
-            val fallback = Intent(this, NotificationService::class.java).apply {
-                putExtra(
-                    NotificationService.EXTRA_MESSAGE,
-                    intent.getStringExtra(EXTRA_MESSAGE).orEmpty(),
-                )
-                putExtra(
-                    NotificationService.EXTRA_MINUTES_BEFORE,
-                    intent.getLongExtra(EXTRA_MINUTES_BEFORE, 0L),
-                )
-            }
-            ContextCompat.startForegroundService(this, fallback)
-            stopSelf(startId)
-            return START_NOT_STICKY
-        }
-
-        promoteToForeground()
         val message = intent.getStringExtra(EXTRA_MESSAGE).orEmpty()
         val minutesBefore = intent.getLongExtra(EXTRA_MINUTES_BEFORE, 0L)
+        Log.d(TAG, "[OverlayService] onStartCommand message='$message' minutesBefore=$minutesBefore")
+        promoteToForeground()
         showOverlay(message, minutesBefore)
         serviceScope.launch { ringtone.play(context = this@OverlayService) }
         return START_NOT_STICKY
     }
 
     private fun showOverlay(message: String, minutesBefore: Long) {
-        if (overlayView != null) return
+        if (overlayView != null) {
+            Log.d(TAG, "[OverlayService] showOverlay: already showing, ignoring")
+            return
+        }
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
         _lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
 
@@ -145,7 +130,14 @@ class OverlayService :
             }
         }
         overlayView = view
-        windowManager.addView(view, layoutParams)
+        Log.d(TAG, "[OverlayService] showOverlay: adding view to WindowManager")
+        runCatching {
+            windowManager.addView(view, layoutParams)
+        }.onFailure {
+            Log.d(TAG, "[OverlayService] showOverlay: addView FAILED", it)
+            overlayView = null
+            stopSelf()
+        }
     }
 
     private fun hideOverlay() {
@@ -188,7 +180,8 @@ class OverlayService :
                 startForeground(OverlayServiceChannel.FOREGROUND_NOTIFICATION_ID, notification)
             }
             startedAsForeground = true
-        }
+            Log.d(TAG, "[OverlayService] promoteToForeground: success")
+        }.onFailure { Log.d(TAG, "[OverlayService] promoteToForeground: FAILED", it) }
     }
 
     private fun openApp() {
@@ -199,6 +192,7 @@ class OverlayService :
     }
 
     override fun onDestroy() {
+        Log.d(TAG, "[OverlayService] onDestroy")
         serviceScope.cancel()
         ringtone.stop()
         super.onDestroy()
@@ -208,5 +202,6 @@ class OverlayService :
         const val EXTRA_MESSAGE = "extra_message"
         const val EXTRA_MINUTES_BEFORE = "extra_minutes_before"
         private const val HIDE_ANIMATION_DELAY_MS = 300L
+        private const val TAG = "AlarmFlow"
     }
 }

@@ -4,15 +4,15 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
-import com.utakatalp.donebot.domain.repository.ReminderPreferences
+import com.utakatalp.donebot.domain.repository.ReminderSettingsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class ReminderPreferencesImpl @Inject constructor(
+class ReminderSettingsRepositoryImpl @Inject constructor(
     private val dataStore: DataStore<Preferences>,
-) : ReminderPreferences {
+) : ReminderSettingsRepository {
 
     override fun observeLeadMinutes(): Flow<Int> =
         dataStore.data.map { it[LEAD_MINUTES] ?: DEFAULT_LEAD_MINUTES }

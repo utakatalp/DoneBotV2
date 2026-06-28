@@ -42,6 +42,11 @@
     <string name="profile_login_button">Log In</string>
     <string name="profile_register_button">Sign Up</string>
     <string name="profile_authenticated_title">You\'re signed in</string>
+    <string name="profile_logout_button">Log out</string>
+    <string name="profile_logout_dialog_title">Log out?</string>
+    <string name="profile_logout_dialog_message">You\'ll be signed out and local tasks will be cleared from this device.</string>
+    <string name="profile_logout_dialog_confirm">Log out</string>
+    <string name="profile_logout_dialog_dismiss">Cancel</string>
     <!-- Home -->
     <string name="home_add_task">Add task</string>
     <string name="home_no_tasks_title">No tasks yet</string>
@@ -114,6 +119,8 @@
     <string name="overlay_running_channel_name">Alarm overlay</string>
     <string name="overlay_running_channel_description">Keeps the reminder visible over other apps.</string>
     <string name="overlay_running">Reminder running</string>
+    <string name="reminder_channel_name">Task reminders</string>
+    <string name="reminder_channel_description">Heads-up notifications when a task is about to start.</string>
     <string name="notification_reminder_title_now">You have a task to do now</string>
     <string name="notification_reminder_title_in_minutes">You have a task in %1$d minutes</string>
     <!-- Settings -->

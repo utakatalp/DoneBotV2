@@ -21,8 +21,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -35,7 +33,6 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.todoapp.uikit.components.TDButton
 import com.todoapp.uikit.components.TDButtonSize
 import com.todoapp.uikit.components.TDButtonType
@@ -47,8 +44,6 @@ import com.todoapp.uikit.theme.TDTheme
 import com.utakatalp.donebot.R
 import com.utakatalp.donebot.ui.onboarding.OnboardingContract.UiAction
 import com.utakatalp.donebot.ui.onboarding.OnboardingContract.UiState
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 
 private val OnboardingImages = listOf(
     R.drawable.onboarding1,
@@ -59,18 +54,16 @@ private val OnboardingImages = listOf(
 
 @Composable
 fun OnboardingScreen(
-    uiState: StateFlow<UiState>,
+    uiState: UiState,
     onAction: (UiAction) -> Unit,
 ) {
-    val state by uiState.collectAsStateWithLifecycle()
-
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
 
     Box(modifier = Modifier.fillMaxSize()) {
         Crossfade(
             modifier = Modifier.fillMaxSize(),
-            targetState = state.bgIndex,
+            targetState = uiState.bgIndex,
             animationSpec = tween(durationMillis = 600),
         ) { idx ->
             Image(
@@ -209,14 +202,14 @@ private fun OnboardingActions(
             type = TDButtonType.PRIMARY,
             size = TDButtonSize.MEDIUM,
             icon = null,
-            onClick = { onAction(UiAction.OnGetStartedClick) },
+            onClick = { onAction(UiAction.OnGetStartedTap) },
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
         TDSpannableText(
             modifier = Modifier
-                .clickable { onAction(UiAction.OnLoginClick) }
+                .clickable { onAction(UiAction.OnLoginTap) }
                 .padding(bottom = 8.dp),
             fullText = stringResource(id = R.string.onboarding_login_span),
             spanText = stringResource(id = R.string.onboarding_login_text_span),
@@ -235,7 +228,7 @@ private fun OnboardingActions(
 private fun OnboardingScreenPreview() {
     TDTheme {
         OnboardingScreen(
-            uiState = MutableStateFlow(UiState(bgIndex = 0)),
+            uiState = UiState(bgIndex = 0),
             onAction = {},
         )
     }
@@ -246,7 +239,7 @@ private fun OnboardingScreenPreview() {
 private fun OnboardingScreenLandscapePreview() {
     TDTheme {
         OnboardingScreen(
-            uiState = MutableStateFlow(UiState(bgIndex = 1)),
+            uiState = UiState(bgIndex = 1),
             onAction = {},
         )
     }

@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.utakatalp.donebot.domain.engine.PomodoroEngine
 import com.utakatalp.donebot.domain.engine.PomodoroMode
 import com.utakatalp.donebot.domain.engine.Session
-import com.utakatalp.donebot.domain.repository.PomodoroPreferences
+import com.utakatalp.donebot.domain.repository.PomodoroSettingsRepository
 import com.utakatalp.donebot.navigation.AddPomodoroTimer
 import com.utakatalp.donebot.navigation.NavigationEffect
 import com.utakatalp.donebot.navigation.Pomodoro
@@ -24,7 +24,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PomodoroLaunchViewModel @Inject constructor(
-    private val pomodoroPreferences: PomodoroPreferences,
+    private val pomodoroSettings: PomodoroSettingsRepository,
     private val pomodoroEngine: PomodoroEngine,
 ) : ViewModel() {
 
@@ -50,7 +50,7 @@ class PomodoroLaunchViewModel @Inject constructor(
     }
 
     private fun loadSettings() = viewModelScope.launch {
-        val saved = pomodoroPreferences.getSettings()
+        val saved = pomodoroSettings.getSettings()
         _uiState.update {
             if (saved == null) it.copy(isLoading = false) else it.copy(
                 focusMinutes = saved.focusTime,
