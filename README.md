@@ -448,5 +448,5 @@ All endpoints return `BaseResponse<T?>` with `code: Int`, `message: String`, `da
 │       └── ui/                            # screens, one folder per feature
 ├── uikit/                                 # Design-system module (TDText, TDPreview, themes)
 ├── gradle/libs.versions.toml              # Single source of truth for versions
-└── CLAUDE.md                              # Agent/maintainer-focused architecture notes
+
 ```
