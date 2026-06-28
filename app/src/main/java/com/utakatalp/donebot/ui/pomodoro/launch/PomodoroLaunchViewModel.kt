@@ -26,7 +26,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PomodoroLaunchViewModel @Inject constructor(
-    private val pomodoroSettings: PomodoroSettingsRepository,
+    pomodoroSettings: PomodoroSettingsRepository,
     private val pomodoroEngine: PomodoroEngine,
 ) : ViewModel() {
 
@@ -89,6 +89,5 @@ class PomodoroLaunchViewModel @Inject constructor(
         return sessions
     }
 
-    private fun emitEffect(effect: UiEffect) = viewModelScope.launch { _uiEffect.send(effect) }
     private fun emitNav(effect: NavigationEffect) = viewModelScope.launch { _navEffect.send(effect) }
 }

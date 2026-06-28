@@ -187,6 +187,5 @@ class RegisterViewModel @Inject constructor(
         }
     }
 
-    private fun emitEffect(effect: UiEffect) = viewModelScope.launch { _uiEffect.send(effect) }
     private fun emitNav(effect: NavigationEffect) = viewModelScope.launch { _navEffect.send(effect) }
 }

@@ -79,7 +79,6 @@ class AlarmSchedulerImpl(
             return
         }
         val canExact = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms()
-        val deltaSec = (triggerAtMillis - now) / 1000
         runCatching {
             if (!canExact) {
                 alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)

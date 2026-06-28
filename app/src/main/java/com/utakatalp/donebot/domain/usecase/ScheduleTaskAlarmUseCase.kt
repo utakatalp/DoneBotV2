@@ -26,13 +26,6 @@ class ScheduleTaskAlarmUseCase @Inject constructor(
                 ),
             )
         } else {
-            val reason = when {
-                task.isCompleted -> "task is completed"
-                !fireAt.isAfter(now) ->
-                    "fireAt is in the past (taskTime $taskTime − ${lead}m lead ≤ now $now). " +
-                        "Pick a later timeStart or a smaller lead in Settings."
-                else -> "unknown"
-            }
             alarmScheduler.cancelForTask(taskId)
         }
     }

@@ -21,7 +21,6 @@ class TokenRefreshAuthenticator @Inject constructor(
 ) : Authenticator {
 
     override fun authenticate(route: Route?, response: Response): Request? {
-        val path = response.request.url.encodedPath
         val count = responseCount(response)
         if (count >= MAX_RETRY_COUNT) {
             return null

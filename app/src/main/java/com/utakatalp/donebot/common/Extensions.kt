@@ -10,7 +10,7 @@ import retrofit2.Response
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 
-suspend inline fun <T> handleLocal(block: () -> T): Result<T> = try {
+inline fun <T> handleLocal(block: () -> T): Result<T> = try {
     Result.success(block())
 } catch (ce: CancellationException) {
     throw ce
