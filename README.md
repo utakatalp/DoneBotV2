@@ -1,3 +1,15 @@
+
+
+https://github.com/user-attachments/assets/be946e59-8eb3-4671-853d-a93642146974
+
+
+
+https://github.com/user-attachments/assets/14ffe6bd-fef8-4d87-aa57-9d58a6e3f653
+
+
+
+https://github.com/user-attachments/assets/0704e131-b571-4de6-8708-a1bbf84dc084
+
 # DoneBot
 
 An offline-first Android task manager with built-in pomodoro timer and
@@ -417,6 +429,15 @@ maestro test .maestro/
 ```
 
 Recordings: [`smoke_guest.mp4`](.maestro/recordings/smoke_guest.mp4), [`add_task.mp4`](.maestro/recordings/add_task.mp4), [`register_and_login.mp4`](.maestro/recordings/register_and_login.mp4).
+https://github.com/user-attachments/assets/be946e59-8eb3-4671-853d-a93642146974
+
+
+
+https://github.com/user-attachments/assets/14ffe6bd-fef8-4d87-aa57-9d58a6e3f653
+
+
+
+https://github.com/user-attachments/assets/0704e131-b571-4de6-8708-a1bbf84dc084
 
 ---
 
