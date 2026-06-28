@@ -21,16 +21,6 @@ import retrofit2.http.PUT
 import retrofit2.http.Path
 
 interface DoneBotApi {
-    @POST("auth/login")
-    suspend fun login(
-        @Body request: LoginRequest,
-    ): Response<BaseResponse<AuthResponseData?>>
-
-    @POST("auth/register")
-    suspend fun register(
-        @Body request: RegisterRequest,
-    ): Response<BaseResponse<AuthResponseData?>>
-
     @GET("tasks")
     suspend fun getTasks(): Response<BaseResponse<TaskListData?>>
 
@@ -56,6 +46,16 @@ interface DoneBotApi {
 }
 
 interface DoneBotAuthApi {
+    @POST("auth/login")
+    suspend fun login(
+        @Body request: LoginRequest,
+    ): Response<BaseResponse<AuthResponseData?>>
+
+    @POST("auth/register")
+    suspend fun register(
+        @Body request: RegisterRequest,
+    ): Response<BaseResponse<AuthResponseData?>>
+
     @POST("auth/refresh")
     suspend fun refreshToken(
         @Body request: RefreshTokenRequest,

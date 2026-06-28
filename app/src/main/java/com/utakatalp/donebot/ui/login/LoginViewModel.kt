@@ -3,8 +3,8 @@ package com.utakatalp.donebot.ui.login
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.utakatalp.donebot.domain.repository.AuthRepository
 import com.utakatalp.donebot.domain.repository.AuthSessionRepository
-import com.utakatalp.donebot.domain.repository.UserRepository
 import com.utakatalp.donebot.domain.usecase.FetchTasksUseCase
 import com.utakatalp.donebot.navigation.Home
 import com.utakatalp.donebot.navigation.NavigationEffect
@@ -27,7 +27,7 @@ private const val PASSWORD_MIN_LENGTH = 8
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val userRepository: UserRepository,
+    private val authRepository: AuthRepository,
     private val authSession: AuthSessionRepository,
     private val fetchTasksUseCase: FetchTasksUseCase,
 ) : ViewModel() {
@@ -87,7 +87,7 @@ class LoginViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, generalError = null) }
-            userRepository.login(current.email, current.password)
+            authRepository.login(current.email, current.password)
                 .onSuccess { session ->
                     authSession.saveSession(session)
                     // Push any guest-mode pending rows AND pull the user's server-side tasks.

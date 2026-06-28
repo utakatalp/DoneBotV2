@@ -3,8 +3,8 @@ package com.utakatalp.donebot.ui.register
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.utakatalp.donebot.domain.repository.AuthRepository
 import com.utakatalp.donebot.domain.repository.AuthSessionRepository
-import com.utakatalp.donebot.domain.repository.UserRepository
 import com.utakatalp.donebot.domain.usecase.SyncPendingTasksUseCase
 import com.utakatalp.donebot.navigation.Home
 import com.utakatalp.donebot.navigation.Login
@@ -29,7 +29,7 @@ private const val PASSWORD_STRONG_LENGTH = 12
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
-    private val userRepository: UserRepository,
+    private val authRepository: AuthRepository,
     private val authSession: AuthSessionRepository,
     private val syncPendingTasksUseCase: SyncPendingTasksUseCase,
 ) : ViewModel() {
@@ -118,7 +118,7 @@ class RegisterViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, generalError = null) }
-            userRepository.register(
+            authRepository.register(
                 email = current.email,
                 password = current.password,
                 displayName = current.fullName,

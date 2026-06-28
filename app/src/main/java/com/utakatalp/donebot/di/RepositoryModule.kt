@@ -6,7 +6,6 @@ import com.utakatalp.donebot.data.repository.AuthSessionRepositoryImpl
 import com.utakatalp.donebot.data.repository.PomodoroSettingsRepositoryImpl
 import com.utakatalp.donebot.data.repository.ReminderSettingsRepositoryImpl
 import com.utakatalp.donebot.data.repository.TaskRepositoryImpl
-import com.utakatalp.donebot.data.repository.UserRepositoryImpl
 import com.utakatalp.donebot.data.source.local.datasource.TaskLocalDataSource
 import com.utakatalp.donebot.data.source.local.datasource.TaskLocalDataSourceImpl
 import com.utakatalp.donebot.data.source.remote.datasource.TaskRemoteDataSource
@@ -19,7 +18,6 @@ import com.utakatalp.donebot.domain.repository.AuthSessionRepository
 import com.utakatalp.donebot.domain.repository.PomodoroSettingsRepository
 import com.utakatalp.donebot.domain.repository.ReminderSettingsRepository
 import com.utakatalp.donebot.domain.repository.TaskRepository
-import com.utakatalp.donebot.domain.repository.UserRepository
 import com.utakatalp.donebot.domain.usecase.FetchTasksUseCase
 import com.utakatalp.donebot.domain.usecase.SyncPendingTasksUseCase
 import dagger.Binds
@@ -43,9 +41,6 @@ abstract class RepositoryModule {
 
     @Binds @Singleton
     abstract fun bindAuthSessionRepository(impl: AuthSessionRepositoryImpl): AuthSessionRepository
-
-    @Binds @Singleton
-    abstract fun bindUserRepository(impl: UserRepositoryImpl): UserRepository
 
     @Binds @Singleton
     abstract fun bindAuthRepository(impl: AuthRepositoryImpl): AuthRepository
