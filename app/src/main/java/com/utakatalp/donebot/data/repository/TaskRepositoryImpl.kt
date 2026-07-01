@@ -166,34 +166,42 @@ class TaskRepositoryImpl @Inject constructor(
 
     private suspend fun syncUpdated(entity: TaskEntity): Result<Unit> {
         val remoteId = entity.remoteId
-        if (remoteId == null) {
-            return handleLocal {
-                localDataSource.updateTask(entity.copy(syncStatus = SyncStatus.PENDING_CREATE))
+        // 404 means the server-side row is gone (e.g., another device deleted it
+        // while this device was editing offline). Edit-beats-delete: preserve the
+        // user's edits by clearing remoteId and demoting to PENDING_CREATE so the
+        // next sync POSTs a fresh copy. Return success so the per-row loop in
+        // syncLocalTasksToServer continues to the next entity.
+        when (remoteId) {
+            null -> {
+                return handleLocal {
+                    localDataSource.updateTask(entity.copy(syncStatus = SyncStatus.PENDING_CREATE))
+                }
             }
-        }
-        return remoteDataSource.updateTask(remoteId, entity.toDomain()).fold(
-            onSuccess = {
-                handleLocal {
-                    localDataSource.updateTask(entity.copy(syncStatus = SyncStatus.SYNCED))
-                }
-            },
-            onFailure = { error ->
-                // 404 means the server-side row is gone (e.g., another device deleted it
-                // while this device was editing offline). Edit-beats-delete: preserve the
-                // user's edits by clearing remoteId and demoting to PENDING_CREATE so the
-                // next sync POSTs a fresh copy. Return success so the per-row loop in
-                // syncLocalTasksToServer continues to the next entity.
-                if (error is com.utakatalp.donebot.common.DomainException.NotFound) {
+
+            else -> return remoteDataSource.updateTask(remoteId, entity.toDomain()).fold(
+                onSuccess = {
                     handleLocal {
-                        localDataSource.updateTask(
-                            entity.copy(remoteId = null, syncStatus = SyncStatus.PENDING_CREATE),
-                        )
+                        localDataSource.updateTask(entity.copy(syncStatus = SyncStatus.SYNCED))
                     }
-                } else {
-                    Result.failure(error)
-                }
-            },
-        )
+                },
+                onFailure = { error ->
+                    // 404 means the server-side row is gone (e.g., another device deleted it
+                    // while this device was editing offline). Edit-beats-delete: preserve the
+                    // user's edits by clearing remoteId and demoting to PENDING_CREATE so the
+                    // next sync POSTs a fresh copy. Return success so the per-row loop in
+                    // syncLocalTasksToServer continues to the next entity.
+                    if (error is com.utakatalp.donebot.common.DomainException.NotFound) {
+                        handleLocal {
+                            localDataSource.updateTask(
+                                entity.copy(remoteId = null, syncStatus = SyncStatus.PENDING_CREATE),
+                            )
+                        }
+                    } else {
+                        Result.failure(error)
+                    }
+                },
+            )
+        }
     }
 
     private suspend fun syncDeleted(entity: TaskEntity): Result<Unit> {

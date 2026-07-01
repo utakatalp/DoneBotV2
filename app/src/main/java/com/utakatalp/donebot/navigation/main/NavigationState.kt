@@ -16,8 +16,6 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import com.utakatalp.donebot.navigation.Home
 import com.utakatalp.donebot.navigation.Profile
 
-/** Top-level routes shown in the bottom bar. */
-val TOP_LEVEL_ROUTES: Set<NavKey> = setOf(Home, Profile)
 
 @Composable
 fun rememberMainNavigationState(): NavigationState {
