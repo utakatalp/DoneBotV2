@@ -13,3 +13,9 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Podcast TTS workspace
+/interview-prep/podcast/.venv/
+/interview-prep/podcast/audio/.tmp/
+/interview-prep/podcast/audio/*.log
+/interview-prep/podcast/.openai_key

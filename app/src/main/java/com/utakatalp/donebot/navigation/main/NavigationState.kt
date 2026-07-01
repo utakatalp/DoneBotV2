@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
@@ -55,7 +56,10 @@ class NavigationState(
         entryProvider: (NavKey) -> NavEntry<NavKey>
     ): List<NavEntry<NavKey>> {
         val decoratedEntries = backStacks.mapValues { (_, stack) ->
-            val decorators = listOf(rememberSaveableStateHolderNavEntryDecorator<NavKey>())
+            val decorators = listOf(
+                rememberSaveableStateHolderNavEntryDecorator<NavKey>(),
+                rememberViewModelStoreNavEntryDecorator(),
+            )
             rememberDecoratedNavEntries(stack, decorators, entryProvider)
         }
         return getTopLevelRoutesInUse().flatMap { decoratedEntries[it] ?: emptyList() }
